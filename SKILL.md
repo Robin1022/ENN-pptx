@@ -17,9 +17,24 @@ description: "用公司自有 PPT 模板生成/编辑内部汇报、方案材料
 
 | 任务 | 方法 |
 |---|---|
+| **场景已有现成模板**(见下表) | 直接复制 `templates/` 下对应的场景模板改文字,**不要**走从 `company-template.pptx` 实例化的流程——那会把已经做好的版面重做一遍 |
 | **新建公司风格演示文稿** | 先按 `PLANNING.md` 分析用户全部内容,规划总页数、叙事顺序、每页核心结论、内容和布局,并让用户一次性确认整体方案;然后由模型为每页自主判断是否使用 `MODULES.md` 的三种模块,或选用其他公司版式 |
 | **编辑现有的公司 PPT** | unzip → 改 `ppt/slides/slideN.xml` → zip,同上遵循公司规范 |
 | **读取内容** | `markitdown deck.pptx`(每页一个 `<!-- Slide number: N -->` 区块);可视化缩略图:`python scripts/thumbnail.py deck.pptx` |
+
+### 现成的场景模板
+
+`templates/` 下有做好的场景模板,内容全是占位提示、不含个人信息。**命中场景时优先用它**,比从 `company-template.pptx` 从零搭快得多,版面也已经过视觉 QA。
+
+| 模板 | 命中场景 | 页数 |
+|---|---|---|
+| `templates/campus-hire-defence.pptx` | 校招生转正答辩 / 新进人员任前答辩 / 试用期转正述职 | 14 |
+
+用法:`cp templates/campus-hire-defence.pptx <目标路径>`,然后按用户内容逐页替换文字。逐页结构见 [`templates/README.md`](templates/README.md)。
+
+改动它时同样适用本文档「编辑现有演示文稿」一节的全部注意事项——尤其是**填充元素只能替换不能新增**(`<p:spPr>` 的填充是互斥选择组,插出两个并列的 `<a:solidFill>` 会让 PowerPoint 报文件损坏,而 XSD 校验、LibreOffice、python-pptx 全都不报错)。
+
+**分发前检查 `docProps`。** `docProps/core.xml` 的 `<dc:creator>` 会一路带着原始作者(公司模板派生出来的文件里常常是某个内部邮箱),`docProps/app.xml` 的 `<TitlesOfParts>` 会留着旧页标题和旧页数。`markitdown`、视觉检查、`validate.py` 都看不到这两处。
 
 **不确定是不是该用这个 skill?** 只要用户没有明确要求公司品牌/模板,且这是个跟公司汇报无关的临时/私人演示文稿,改用通用 `pptx` skill——那边的配色/字体规范是通用设计建议,不会被这里的公司规范覆盖。
 

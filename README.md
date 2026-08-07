@@ -10,7 +10,9 @@
 
 ## ⚠️ 使用前必读
 
-**模板文件不在仓库里。** `templates/company-template.pptx` 被 `.gitignore` 排除——模板内含真实内部示例文案，不适合放在公开仓库中。需要你自行放置，见 [`templates/README.md`](templates/README.md)。
+**`company-template.pptx` 不在仓库里。** 它被 `.gitignore` 排除——内含真实内部示例文案，不适合放在公开仓库中。需要你自行放置，见 [`templates/README.md`](templates/README.md)。
+
+`templates/` 下的**场景模板**不受此限制，可以直接取用，见下面的[场景模板](#场景模板)。
 
 **文档里的视觉数值有板块归属。** `COMPANY_STYLE.md` 的画布尺寸、Logo 坐标、配色表、字体、9 个版式一览，以及 `MODULES.md` 的三个内容模块，全部是从**新奥新智模板**实测得出的。如果你所在板块用的是同一套模板，可以直接用；如果不是，这些数值需要重测，否则生成的 PPT 在 Logo 位置、配色和版式编号上都会对不上。
 
@@ -116,6 +118,22 @@ ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
 - [ ] `COMPANY_STYLE.md` 八项数值已换成本板块模板的实测值
 - [ ] `MODULES.md` 已重定义或已删除（并清理了引用）
 - [ ] 跑一遍完整流程生成一份测试 deck，视觉检查 Logo 位置、配色、字体是否正确
+
+---
+
+## 场景模板
+
+`templates/` 下除了需要自行放置的 `company-template.pptx`，还收了开箱即用的场景模板。它们已清空全部个人信息，复制一份改文字即可，**不需要**经过"从模板实例化"的生成流程。
+
+| 模板 | 场景 | 页数 |
+|---|---|---|
+| [`templates/campus-hire-defence.pptx`](templates/campus-hire-defence.pptx) | 校招生转正答辩 | 14 |
+
+**校招生转正答辩**：从 HR 的「新进人员任前答辩」表单改造而来，针对校招生场景调整了措辞与结构——`过往业绩亮点及资源情况` 改为 `项目与科研经历`、`目标承诺` 改为 `转正后的工作计划`、`年度重点工作落实思路`（Q1–Q4）改为 `能力提升路径`（首月 / 3 / 6 / 12 个月），并新增 `2.3 从校园到职场的转变与自我复盘`。逐页结构和改造理由见 [`templates/README.md`](templates/README.md)。
+
+```bash
+cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
+```
 
 ---
 
