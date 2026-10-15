@@ -1,12 +1,12 @@
 ---
-name: enn-pptx-2-0
+name: enn-pptx2
 description: "用公司自有 PPT 模板生成/编辑内部汇报、方案材料等 .pptx 文件。触发场景：用户要求「用公司模板」「公司PPT」「内部汇报」「新奥」「新奥新智/ENNEW」相关的演示文稿制作,或明确引用 templates/company-template.pptx。与通用 pptx skill 的区别:这个 skill 默认套用公司品牌(配色/字体/Logo/版式),不做与品牌无关的通用/个人 PPT——那种场景交给通用 pptx skill。"
 hooks:
   PreToolUse:
     - matcher: "Bash|Edit|Write|MultiEdit"
       hooks:
         - type: command
-          command: "python3 \"${CLAUDE_SKILL_DIR:-$HOME/.claude/skills/enn-pptx-2-0}/scripts/guard_templates.py\""
+          command: "f=\"${CLAUDE_SKILL_DIR:-$HOME/.claude/skills/enn-pptx2}/scripts/guard_templates.py\"; [ ! -f \"$f\" ] || python3 \"$f\""
 ---
 
 # 公司 PPTX 生成、编辑与分析
