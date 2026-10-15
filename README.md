@@ -1,10 +1,21 @@
-# ENN-pptx
+# ENN-pptx 2.0
 
 给 Claude Code 用的**新奥集团 PPT 模板生成 skill** —— 通用 [pptx skill](https://github.com/anthropics/skills/tree/main/skills/pptx) 的定制分支。底层机制（pptxgenjs 踩坑清单、XML 直接编辑、校验器）继承自官方版本，新增的是**默认套用新奥的 PPT 模板**，以及一套"先规划叙事、再自适应布局"的生成流程。
 
 生成时不逐页套模块，而是先对用户素材做整体叙事规划，显式判断是否需要外部知识检索，再按每页的内容量和信息层级自适应选择版式。核心主张是**内容决定结构，模板决定风格**：栏数、条目数、图分几层跟着实际内容走，配色/字体/Logo/图形语言严格跟模板一致。
 
 面向新奥集团各板块使用。当前视觉规范基线取自**新奥新智（ENNEW）**的模板；其他板块如果用的是另一套模板，需要按下面的[模板适配](#模板适配)重测一遍。
+
+## 内容
+
+- 使用前必读
+- 快速开始：安装 skill、依赖、放置模板
+- 模板适配：换用其他板块模板时的三步重测
+- 场景模板
+- 目录：各文件作用
+- 脚本
+- 依赖
+- 来源
 
 ---
 
@@ -22,13 +33,13 @@
 
 ### 1. 安装 skill
 
-克隆到 Claude Code 的 skills 目录：
+把整个目录放到 Claude Code 的 skills 目录：
 
 ```bash
-git clone https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx
+cp -R enn-pptx-2-0 ~/.claude/skills/enn-pptx-2-0
 ```
 
-目录名可以自己改，Claude Code 识别的是 `SKILL.md` 里 frontmatter 的 `name` 字段。
+目录名保持 `enn-pptx-2-0`：`SKILL.md` frontmatter 里的模板保护 hook 在拿不到 `CLAUDE_SKILL_DIR` 时会退回这个默认路径。
 
 ### 2. 安装依赖
 
@@ -36,8 +47,8 @@ git clone https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx
 # Python 依赖：文本提取 / 缩略图 / 清理 / 校验
 pip install "markitdown[pptx]" Pillow defusedxml lxml
 
-# Node 依赖：pptxgenjs 用于从零绘制内容区
-npm install -g pptxgenjs
+# Node 依赖：pptxgenjs 用于绘制内容区
+npm install pptxgenjs
 
 # 系统依赖：LibreOffice 用于转 PDF，Poppler 用于转图片做视觉 QA
 brew install --cask libreoffice   # macOS
@@ -49,7 +60,7 @@ Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`pop
 ### 3. 放置模板
 
 ```bash
-cp /path/to/模板.pptx ~/.claude/skills/enn-pptx/templates/company-template.pptx
+cp /path/to/模板.pptx ~/.claude/skills/enn-pptx-2-0/templates/company-template.pptx
 ```
 
 文件名必须是 `company-template.pptx`，否则 `SKILL.md` 里所有"从模板实例化"的流程都找不到它。
@@ -68,8 +79,8 @@ cp /path/to/模板.pptx ~/.claude/skills/enn-pptx/templates/company-template.ppt
 ### 第 1 步：盘点模板结构
 
 ```bash
-cd ~/.claude/skills/enn-pptx
-python scripts/thumbnail.py templates/company-template.pptx template-thumbs
+cd ~/.claude/skills/enn-pptx-2-0
+python3 scripts/thumbnail.py templates/company-template.pptx template-thumbs
 ```
 
 会生成 `template-thumbs.jpg`（超过 12 页拆成多张），是带编号标签的缩略图网格。对着它确认：
@@ -114,7 +125,7 @@ ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
 ### 适配完成检查
 
 - [ ] `templates/company-template.pptx` 已放置
-- [ ] 依赖已装齐（`python scripts/office/validate.py --help` 能跑通）
+- [ ] 依赖已装齐（`python3 scripts/office/validate.py --help` 能跑通）
 - [ ] `COMPANY_STYLE.md` 八项数值已换成本板块模板的实测值
 - [ ] `MODULES.md` 已重定义或已删除（并清理了引用）
 - [ ] 跑一遍完整流程生成一份测试 deck，视觉检查 Logo 位置、配色、字体是否正确
@@ -147,6 +158,7 @@ cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
 | [`LAYOUT.md`](LAYOUT.md) | 按内容密度分配区域、选择网格、改造模块、检测无效留白 | 否 |
 | [`COMPANY_STYLE.md`](COMPANY_STYLE.md) | 视觉规范（画布/配色/字体/Logo/版式一览） | **是，整篇重测** |
 | [`MODULES.md`](MODULES.md) | 内容原型模块及其复用边界 | **是，重定义或删除** |
+| [`evals/evals.json`](evals/evals.json) | 3 个测试任务，改动 skill 后开/关 skill 各跑一遍对比 | 换模板后按新模板改写任务 |
 
 `PLANNING.md` / `RESEARCH.md` / `LAYOUT.md` 这三份是与具体模板无关的方法论，任何板块都可以原样用——它们也是这个仓库相对官方 pptx skill 的主要增量。
 
@@ -158,7 +170,9 @@ cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
 | `scripts/add_slide.py` | 复制幻灯片或从版式新建，自动处理全部包级注册 |
 | `scripts/clean.py` | 清理不再被引用的幻灯片、媒体和关系条目 |
 | `scripts/office/validate.py` | Schema、关系、内容类型、图表和幻灯片检查（从模板派生的 deck 记得传 `--original`） |
-| `scripts/office/soffice.py` | LibreOffice 封装（沙箱环境下直接裸调 `soffice` 会卡住） |
+| `scripts/office/soffice.py` | LibreOffice 封装（自动配置运行环境，避免裸调 `soffice` 卡住） |
+| `scripts/check_delivery.py` | 交付前检查：XML 声明、docProps 作者与旧页标题、模板示例文案残留、场景模板占位；`--fix` 自动修 docProps |
+| `scripts/guard_templates.py` | 模板保护 hook，由 `SKILL.md` frontmatter 自动挂载，拦截写入 `templates/` 原始模板的操作 |
 
 ## 依赖
 

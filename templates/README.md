@@ -29,7 +29,7 @@ templates/company-template.pptx
 - `slideMaster1` 承载 Logo,9 个版式 `slideLayout1.xml` ~ `slideLayout9.xml` 会自动继承
 - `slide1.xml` / `slide2.xml` / `slide3.xml` 为三个内容原型页,是 `MODULES.md` 的复制源
 
-模板结构不同时,先运行 `python scripts/thumbnail.py <模板>.pptx template-thumbs` 重新做一次版式盘点,再据此更新 `COMPANY_STYLE.md` 的版式一览表和配色表。
+模板结构不同时,先运行 `python3 scripts/thumbnail.py <模板>.pptx template-thumbs` 重新做一次版式盘点,再据此更新 `COMPANY_STYLE.md` 的版式一览表和配色表。
 
 ---
 
