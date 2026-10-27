@@ -1,7 +1,4 @@
-# 只有 company-template.pptx 不入库 —— 它内含真实内部示例文案
-# templates/ 下的其他场景模板可以正常提交
-templates/company-template.pptx
-templates/company-template.potx
+# templates/ 下的公司模板和场景模板都入库
 
 __pycache__/
 *.pyc

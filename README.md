@@ -21,7 +21,7 @@
 
 ## ⚠️ 使用前必读
 
-**`company-template.pptx` 不在仓库里。** 它被 `.gitignore` 排除——内含真实内部示例文案，不适合放在公开仓库中。需要你自行放置，见 [`templates/README.md`](templates/README.md)。
+**仓库自带新奥新智模板。** `templates/company-template.pptx` 已收录，用同一套模板的板块 clone 后即可使用；其他板块用自己的模板覆盖同名文件，见 [`templates/README.md`](templates/README.md)。
 
 `templates/` 下的**场景模板**不受此限制，可以直接取用，见下面的[场景模板](#场景模板)。
 
@@ -57,7 +57,9 @@ brew install poppler
 
 Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`poppler-utils`）。
 
-### 3. 放置模板
+### 3. 确认模板
+
+仓库已带新奥新智模板 `templates/company-template.pptx`。用其他模板时覆盖这个文件：
 
 ```bash
 cp /path/to/模板.pptx ~/.claude/skills/enn-pptx2/templates/company-template.pptx
@@ -124,7 +126,7 @@ ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
 
 ### 适配完成检查
 
-- [ ] `templates/company-template.pptx` 已放置
+- [ ] `templates/company-template.pptx` 已换成本板块的模板
 - [ ] 依赖已装齐（`python3 scripts/office/validate.py --help` 能跑通）
 - [ ] `COMPANY_STYLE.md` 八项数值已换成本板块模板的实测值
 - [ ] `MODULES.md` 已重定义或已删除（并清理了引用）
@@ -134,7 +136,7 @@ ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
 
 ## 场景模板
 
-`templates/` 下除了需要自行放置的 `company-template.pptx`，还收了开箱即用的场景模板。它们已清空全部个人信息，复制一份改文字即可，**不需要**经过"从模板实例化"的生成流程。
+`templates/` 下除了公司模板 `company-template.pptx`，还收了开箱即用的场景模板。它们已清空全部个人信息，复制一份改文字即可，**不需要**经过"从模板实例化"的生成流程。
 
 | 模板 | 场景 | 页数 |
 |---|---|---|

@@ -4,22 +4,22 @@
 
 | 文件 | 是否入库 | 说明 |
 |---|---|---|
-| `company-template.pptx` | ❌ 不入库 | 整个 skill 的视觉约束来源。内含真实内部示例文案,被 `.gitignore` 排除,需自行放置 |
+| `company-template.pptx` | ✅ 已入库 | 整个 skill 的视觉约束来源,收录的是新奥新智模板 |
 | `campus-hire-defence.pptx` | ✅ 已入库 | 校招生转正答辩的场景模板,已清空全部个人信息 |
 
 ---
 
-## company-template.pptx —— 需要自行放置
+## company-template.pptx —— 公司模板
 
 它是 `COMPANY_STYLE.md` 全部数值的来源(画布尺寸、配色、字体、Logo 坐标、9 个可实例化版式,以及 3 个可复用的内容原型页)。
 
-**它没有入库。** 模板文件里带着真实的内部示例文案,不适合放在公开仓库中。把公司模板放到这里并命名为:
+仓库里收录的是新奥新智模板,clone 下来即可使用。换用其他板块的模板时,用同名文件覆盖:
 
 ```
 templates/company-template.pptx
 ```
 
-没有这个文件时,`SKILL.md` 里所有"从模板实例化"的流程都无法执行。
+文件名必须是 `company-template.pptx`,`SKILL.md` 里所有"从模板实例化"的流程都按这个名字找它。
 
 ### 模板需要满足的前提
 
