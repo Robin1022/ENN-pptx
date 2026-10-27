@@ -13,10 +13,10 @@ hooks:
 
 ## 不可省的规则
 
-1. **新建 deck 先交整体规划,用户确认后才动手**(`PLANNING.md`)。素材缺口自主推理补全,但推测内容必须标 `[推理补充]` / `[待确认假设]` / `[示意数据]`,不得写成用户提供的事实。
+1. **新建 deck 先交整体规划,用户确认后才动手**(`PLANNING.md`)。素材缺口自主推理补全,但推测内容必须标 `[推理补充]` / `[待确认假设]` / `[示意数据]`,不得写成用户提供的事实。这些标记只写在规划和回复里,不写到幻灯片上(见「内容来源」)。
 2. **模板原文件只读。** 一律 `cp` 出工作副本再操作;写入 `templates/` 下模板的命令会被 hook 拦截。
 3. **成稿不得带模板示例文案。** 所有 `add_slide.py` 复制完成后,从 `<p:sldIdLst>` 移除示例页,再跑 `clean.py`。
-4. **交付前三道检查全过才算完成**:`validate.py --original`、`check_delivery.py`、渲染后的视觉 QA。任何一道失败,修完从失败的那一步重跑。
+4. **交付前四道检查全过才算完成**:`validate.py --original`、`check_delivery.py`、`check_layout.py`、渲染后的视觉 QA。任何一道失败,修完从失败的那一步重跑。
 
 ## 配套文档
 
@@ -28,6 +28,8 @@ hooks:
 - [`COMPANY_STYLE.md`](COMPANY_STYLE.md) —— 画布/配色/字体/Logo/版式一览
 - [`MODULES.md`](MODULES.md) —— 三种可选的结构化正文原型
 - [`templates/README.md`](templates/README.md) —— 场景模板逐页结构
+- [`PPTXGENJS.md`](PPTXGENJS.md) —— 用 pptxgenjs 给正文区补画内容时的踩坑清单
+- [`EXPERIENCE.md`](EXPERIENCE.md) —— 历次优化的依据和结论,改这个 skill 之前先读
 - [`README.md` 的「模板适配」](README.md#模板适配) —— 换用其他板块模板时的重测步骤(`COMPANY_STYLE.md` 的数值只对新奥新智模板成立)
 
 本 skill 是通用 [pptx skill](https://github.com/anthropics/skills/tree/main/skills/pptx) 的公司分支,脚本和踩坑清单继承自官方版本。下文路径都相对本 skill 目录。
@@ -38,7 +40,7 @@ hooks:
 |---|---|
 | **场景已有现成模板**(见下表) | 复制 `templates/` 下的场景模板改文字,**不走** `company-template.pptx` 实例化流程——那会把做好的版面重做一遍 |
 | **新建公司风格演示文稿** | 走下面的默认工作流 |
-| **编辑现有的公司 PPT** | 见「编辑现有演示文稿和模板」,同样遵循公司规范 |
+| **修改现有 PPT 的某几页(最常见)** | 见「修改现有页面」:改前备份,改完校验和几何检查,写回原文件 |
 | **读取内容** | `markitdown deck.pptx`(每页一个 `<!-- Slide number: N -->` 区块);缩略图:`python3 scripts/thumbnail.py deck.pptx <prefix>` |
 
 用户没有要求公司品牌/模板、且是跟公司汇报无关的私人演示文稿时,改用通用 `pptx` skill。
@@ -51,6 +53,37 @@ hooks:
 
 `cp templates/campus-hire-defence.pptx <目标路径>` 后逐页替换文字;改动时同样适用「填充模板时」的全部注意事项,尤其是**填充元素只能替换不能新增**(`<p:spPr>` 的填充是互斥选择组,插出两个并列的 `<a:solidFill>` 会让 PowerPoint 报损坏,而 XSD、LibreOffice、python-pptx 都不报错)。交付前检查用 `--scaffold` 指向这份场景模板。
 
+## 内容来源
+
+用户给了材料(文档、已有页面、口述要点)时,页面上的痛点、技术点、方法和组件名都以材料为准。
+
+- 材料之外补充的内容(推理补全、外部检索、示意数据、你认为该有的技术点)可以写,但每次改完都在回复里逐条列出:补了什么、写在哪、依据是什么。用户问"材料里有没有"时,引用材料原文整句回答;没有就直说是补充的。
+- 推理、假设、示意、来源这些标记只写在规划和回复里。幻灯片上不出现标记、来源脚注、注释和状态括注,用户要求标注时才加。
+
+## 文案
+
+这类 PPT 用于技术汇报和评审,页面文字按正式的书面技术语言写:
+
+- 直接陈述做法、机制和结论。不用设问式标签、装饰性引号、口号式短语,也不用口语和网络化表达。
+- 每句话落到具体的对象和动作上,读者不靠讲解也能看懂。概括性的说法后面要跟上它具体指什么。
+- 术语沿用材料和已有页面的叫法。新引入的术语要么当页解释清楚,要么换成材料里已有的说法;同一个概念全页只用一种叫法。
+
+## 修改现有页面
+
+用户最常见的用法是拿一份已有的 PPT,围绕其中一两页反复修改。每一轮:
+
+1. **确定写到哪个文件。** 默认原地写回用户给的那份文件,不另存新版本。用户说"新的 ppt""单起一个""新加一页"时,才另存文件或用 `add_slide.py` 加页;新加的页放在被参照页的后面,原页保持不动。
+2. **动手前备份。** 第一次修改前把原文件复制到工作目录,作为 `--original` 的基线和出错时的回退版本。
+3. **改内容。** 解压 → 改 `ppt/slides/slideN.xml` → 打包,写法见「填充模板时」。用生成脚本重画整块区域时,传给 XML 的每个属性值都要是 schema 允许的取值(对齐、换行、锚点这类枚举不能传数字或 `None`)。
+4. **检查后再写回。**
+   ```bash
+   python3 scripts/office/validate.py out.pptx --original backup.pptx
+   python3 scripts/check_delivery.py out.pptx
+   python3 scripts/check_layout.py out.pptx --original backup.pptx --slides N
+   ```
+   然后只渲染改动的页(「转换成图片」),对照几何检查的结果逐条看。都处理完再覆盖原文件。
+5. **回复里说清楚**改了哪一页的哪些地方,以及按「内容来源」列出这轮补充的内容。
+
 ## 默认工作流:用公司模板新建
 
 把这份清单复制到回复里,逐项打勾:
@@ -59,10 +92,11 @@ hooks:
 - [ ] 1. 规划:按 PLANNING.md 出整体规划(含 RESEARCH.md 的检索决策、LAYOUT.md 的逐页密度判断),用户确认
 - [ ] 2. 建页:cp 模板 → 解压 → add_slide.py 建出全部目标页
 - [ ] 3. 定稿结构:调整 <p:sldIdLst> 顺序,移除示例页引用,跑 clean.py
-- [ ] 4. 填内容:改 ppt/slides/slideN.xml,或用 pptxgenjs 重搭不匹配的区域
+- [ ] 4. 填内容:改 ppt/slides/slideN.xml,或用 pptxgenjs 重搭不匹配的区域(见 PPTXGENJS.md)
 - [ ] 5. 打包 + validate.py --original          失败 → 回到第 4 步修
 - [ ] 6. check_delivery.py --template           失败 → docProps 类加 --fix;文案残留回到第 4 步
-- [ ] 7. 渲染成图片做视觉 QA                   有缺陷 → 回到第 4 步,修完从第 5 步重跑
+- [ ] 7. check_layout.py --original             对照渲染图确认是可见问题 → 回到第 4 步
+- [ ] 8. 渲染成图片做视觉 QA                   有缺陷 → 回到第 4 步,修完从第 5 步重跑
 ```
 
 第 1 步的规划要求、标记规则和输出格式全在 `PLANNING.md`。三个示例正文页是可选原型:每页由模型按内容语义判断是否复制对应源页,不匹配就用 `COMPANY_STYLE.md` 的其他版式,不让用户逐页挑模块。
@@ -83,10 +117,11 @@ python3 scripts/clean.py /tmp/unpacked/
 # 4. 编辑最终保留页:结构跟源页接近 = 安全文字替换(见「填充模板时」);
 #    栏数/条目数/层级对不上 = 保留 COMPANY_STYLE.md 的图形语言,增删形状子组或用 pptxgenjs 重搭该区域
 
-# 5-6. 打包与检查
+# 5-7. 打包与检查
 (cd /tmp/unpacked && rm -f ../out.pptx && zip -Xr ../out.pptx .)
 python3 scripts/office/validate.py /tmp/out.pptx --original templates/company-template.pptx
 python3 scripts/check_delivery.py /tmp/out.pptx --template templates/company-template.pptx
+python3 scripts/check_layout.py /tmp/out.pptx --original templates/company-template.pptx
 ```
 
 ## 脚本
@@ -98,31 +133,9 @@ python3 scripts/check_delivery.py /tmp/out.pptx --template templates/company-tem
 | `scripts/clean.py unpacked/` | 删除不再被引用的幻灯片、媒体和关系。`<p:sldIdLst>` 定稿**之后**运行 |
 | `scripts/office/validate.py deck.pptx [--original src.pptx]` | Schema、关系、内容类型、图表和幻灯片检查,每条失败附修复方法。模板派生的 deck 必须传 `--original` |
 | `scripts/check_delivery.py deck.pptx [--template ...] [--scaffold ...] [--fix]` | 交付前检查:XML 声明 `standalone="yes"`、docProps 作者与旧页标题、模板示例文案残留、场景模板占位、通用占位符与规划标签。`--fix` 自动修 docProps |
+| `scripts/check_layout.py deck.pptx [--original src.pptx] [--slides 5,6]` | 版面几何检查:形状超出画布、图片或方块压到边框、箭头短到只剩箭头头部,以及按字宽估算的文字溢出、文字压边框、连线穿过文字。结果要对照渲染图判断,见「版面几何检查」 |
 | `scripts/office/soffice.py --headless --convert-to pdf deck.pptx` | LibreOffice 封装,自动配置运行环境,避免裸调 `soffice` 卡住 |
 | `scripts/guard_templates.py` | hook 脚本,由 frontmatter 自动挂载,拦截写入原始模板的操作,不需要手动调用 |
-
-## 用 pptxgenjs 补充内容——踩坑清单
-
-只在**版式实例化之后、给正文区补内容**时用 pptxgenjs,不要拿它从零画整份公司 PPT。颜色/字号一律取 `COMPANY_STYLE.md`。先试 `require('pptxgenjs')`,失败再 `npm install pptxgenjs`。
-
-- **加幻灯片之前先设 `pres.layout = "LAYOUT_WIDE"`**(13.33" × 7.5",公司模板尺寸)。默认 `LAYOUT_16x9` 只有 10" × 5.625",超界坐标会被写进去但不显示。
-- **十六进制颜色不带 `#`、不用 8 位。** `"#FF0000"` 和 `"00000020"` 都会导致文件损坏。半透明:填充和图片用 `transparency: 0-100`,阴影用 `opacity: 0.0-1.0`,用错会被静默忽略。
-- **pptxgenjs 会原地修改传入的 options 对象**(转成 EMU)。不要在两次 `add*` 之间共享 `shadow`/options 对象。
-- **阴影 `offset` 必须 ≥ 0**,负值损坏文件;向上投影用 `angle: 270` 配正 offset。
-- **`letterSpacing` 被静默忽略**,用 `charSpacing`。
-- **列表:** 每项 `bullet: true`,不手打 `•`;除最后一项外都设 `breakLine: true`;段间距用 `paraSpaceAfter`,不用 `lineSpacing`。
-- **每个输出文件一个 `new pptxgen()`**,不复用实例。
-- **`rectRadius` 只对 `ROUNDED_RECTANGLE` 生效。**
-- **不支持渐变填充**,改用渐变图片当背景。
-- **文本框自带内部留白**,需要跟形状/线条对齐时设 `margin: 0`。
-- **讲者备注写进 `slide.addNotes("...")`**,不写进页面文本框。
-- **图表尽量原生 `addChart()`**(组合图传 `{type, data, options}` 数组);趋势线、误差线自己算额外系列或后处理 OOXML;只有桑基图、网络图、和弦图这类 PowerPoint 没有原生形式的才用图片。
-- **默认图表很朴素**:设 `showTitle` + `title`、`showValue: true` + `dataLabelPosition`、`chartColors` 取 `COMPANY_STYLE.md` 配色,弱化坐标轴和网格线(`catAxisLabelColor`/`valAxisLabelColor`、`valGridLine: { color, size }`、`catGridLine: { style: "none" }`),单系列 `showLegend: false`。
-- **堆叠柱状/条形图的 `dataLabelPosition` 只能是 `ctr`、`inEnd`、`inBase`**,`outEnd` 损坏文件。
-- **用 `secondaryValAxis`/`secondaryCatAxis` 时,`valAxes` 和 `catAxes` 都要各给两条**,否则 PowerPoint 丢弃整个图表并报损坏。
-- **`writeFile()` 之后跑 `validate.py`**,它能报出上面两类图表问题;去生成脚本里改,不手改打包好的 XML。
-- **不要挪动 `<p:presentation>` 子元素顺序。** pptxgenjs 把 `<p:notesMasterIdLst>` 紧跟在 `<p:sldIdLst>` 后,PowerPoint 能读,挪动后反而打不开。
-- **图标:** `react-icons` 渲染 SVG(`ReactDOMServer.renderToStaticMarkup`)→ `sharp` 栅格化到 ≥256px → `addImage({ data: "image/png;base64," + buf.toString("base64") })`,前缀 `image/png;base64,` 必须有。require 失败时 `npm install react-icons react react-dom sharp`。
 
 ## 编辑现有演示文稿和模板
 
@@ -192,7 +205,7 @@ python3 scripts/check_delivery.py out.pptx --template deck.pptx       # deck.ppt
 
 ## 质量检查
 
-第一次渲染通常有真实问题。按「检查 → 修复 → 重新检查」循环,直到三道检查全部通过才交付。
+第一次渲染通常有真实问题。按「检查 → 修复 → 重新检查」循环,直到四道检查全部通过才交付。
 
 ### 文件检查
 
@@ -208,6 +221,16 @@ python3 scripts/check_delivery.py output.pptx --template src.pptx    # 场景模
 ### 内容检查
 
 `markitdown output.pptx`,检查内容缺失、错别字、顺序错乱。
+
+### 版面几何检查
+
+```bash
+python3 scripts/check_layout.py output.pptx --original src.pptx --slides 5   # 只查改过的页
+```
+
+从坐标算出形状超出画布、图片或方块压到边框、箭头短到只剩箭头头部,再按字宽估算文字溢出、文字压边框、连线穿过文字。渲染图上这类问题小而分散,用户反复指出过,所以每次改完先跑这一步。`--original` 传改动前的文件或模板,原来就有的不再列出。
+
+列出来的是几何事实,不一定是缺陷:有意骑在边框上的页签和编号、刻意画成三角的小箭头也会出现。每一条都到渲染图里核对,是用户能看到的问题才改。
 
 ### 视觉检查
 
