@@ -1,6 +1,7 @@
-# 公司模板不入库 —— 内含内部示例文案，见 templates/README.md
+# 只收录公司模板本身，其他临时 pptx 不入库
 templates/*.pptx
 templates/*.potx
+!templates/company-template.pptx
 
 __pycache__/
 *.pyc

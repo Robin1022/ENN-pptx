@@ -1,18 +1,14 @@
 # templates/
 
-这个目录本应放 `company-template.pptx` —— 整个 skill 的视觉约束来源（画布尺寸、配色、字体、Logo、9 个可实例化版式，以及 3 个可复用的内容原型页）。
+这个目录放 `company-template.pptx` —— 整个 skill 的视觉约束来源（画布尺寸、配色、字体、Logo、9 个可实例化版式，以及 3 个可复用的内容原型页）。
 
-**它没有入库。** 模板文件里带着真实的内部示例文案，不适合放在公开仓库中，因此被 `.gitignore` 排除。
-
-## 使用前需要自行放置
-
-把公司模板放到这里并命名为 `company-template.pptx`：
+仓库里收录的是新奥新智模板，clone 下来即可使用。换用其他板块的模板时，用同名文件覆盖：
 
 ```
 templates/company-template.pptx
 ```
 
-没有这个文件时，`SKILL.md` 里所有"从模板实例化"的流程都无法执行。
+文件名必须是 `company-template.pptx`，`SKILL.md` 里所有"从模板实例化"的流程都按这个名字找它。
 
 ## 模板需要满足的前提
 

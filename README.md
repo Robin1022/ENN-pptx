@@ -10,7 +10,7 @@
 
 ## ⚠️ 使用前必读
 
-**模板文件不在仓库里。** `templates/company-template.pptx` 被 `.gitignore` 排除——模板内含真实内部示例文案，不适合放在公开仓库中。需要你自行放置，见 [`templates/README.md`](templates/README.md)。
+**仓库自带新奥新智模板。** `templates/company-template.pptx` 已收录，用同一套模板的板块 clone 后即可使用；其他板块用自己的模板覆盖同名文件，见 [`templates/README.md`](templates/README.md)。
 
 **文档里的视觉数值有板块归属。** `COMPANY_STYLE.md` 的画布尺寸、Logo 坐标、配色表、字体、9 个版式一览，以及 `MODULES.md` 的三个内容模块，全部是从**新奥新智模板**实测得出的。如果你所在板块用的是同一套模板，可以直接用；如果不是，这些数值需要重测，否则生成的 PPT 在 Logo 位置、配色和版式编号上都会对不上。
 
@@ -44,7 +44,9 @@ brew install poppler
 
 Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`poppler-utils`）。
 
-### 3. 放置模板
+### 3. 确认模板
+
+仓库已带新奥新智模板 `templates/company-template.pptx`。用其他模板时覆盖这个文件：
 
 ```bash
 cp /path/to/模板.pptx ~/.claude/skills/enn-pptx/templates/company-template.pptx
