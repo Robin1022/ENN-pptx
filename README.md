@@ -15,8 +15,8 @@
 | 分支 | skill 名 | 说明 |
 |---|---|---|
 | `main`（本分支） | `enn-pptx-origin` | 长期使用的稳定版，留作备份和对照 |
-| [`ENNEW`](https://github.com/Robin1022/ENN-pptx/tree/ENNEW) | `enn-pptx-new` | 在稳定版基础上，按近期真实使用会话优化：修复校验漏报、新增版面几何检查、改稿流程默认原地写回、页面不再出现推测标记 |
-| [`enn-pptx-2.0`](https://github.com/Robin1022/ENN-pptx/tree/enn-pptx-2.0) | `enn-pptx-new-2` | 按 skill 写作规则重构后，再做同一批优化；多了交付检查脚本、模板写保护 hook、测试任务和场景模板 |
+| [`enn-pptx-new`](https://github.com/Robin1022/ENN-pptx/tree/enn-pptx-new) | `enn-pptx-new` | 在稳定版基础上，按近期真实使用会话优化：修复校验漏报、新增版面几何检查、改稿流程默认原地写回、页面不再出现推测标记 |
+| [`enn-pptx-new-2`](https://github.com/Robin1022/ENN-pptx/tree/enn-pptx-new-2) | `enn-pptx-new-2` | 按 skill 写作规则重构后，再做同一批优化；多了交付检查脚本、模板写保护 hook、测试任务和场景模板 |
 
 三个 skill 的触发描述相同，使用时用 `/enn-pptx-origin`、`/enn-pptx-new`、`/enn-pptx-new-2` 指定。两个优化分支各自的改动依据见分支里的 `EXPERIENCE.md`。
 
