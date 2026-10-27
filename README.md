@@ -23,7 +23,7 @@
 克隆到 Claude Code 的 skills 目录：
 
 ```bash
-git clone https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx
+git clone -b ENNEW https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new
 ```
 
 目录名可以自己改，Claude Code 识别的是 `SKILL.md` 里 frontmatter 的 `name` 字段。
@@ -49,7 +49,7 @@ Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`pop
 仓库已带新奥新智模板 `templates/company-template.pptx`。用其他模板时覆盖这个文件：
 
 ```bash
-cp /path/to/模板.pptx ~/.claude/skills/enn-pptx/templates/company-template.pptx
+cp /path/to/模板.pptx ~/.claude/skills/enn-pptx-new/templates/company-template.pptx
 ```
 
 文件名必须是 `company-template.pptx`，否则 `SKILL.md` 里所有"从模板实例化"的流程都找不到它。
@@ -68,7 +68,7 @@ cp /path/to/模板.pptx ~/.claude/skills/enn-pptx/templates/company-template.ppt
 ### 第 1 步：盘点模板结构
 
 ```bash
-cd ~/.claude/skills/enn-pptx
+cd ~/.claude/skills/enn-pptx-new
 python scripts/thumbnail.py templates/company-template.pptx template-thumbs
 ```
 
