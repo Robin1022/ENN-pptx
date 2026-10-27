@@ -23,7 +23,7 @@
 克隆到 Claude Code 的 skills 目录：
 
 ```bash
-git clone -b ENNEW https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new
+git clone -b enn-pptx-new https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new
 ```
 
 目录名可以自己改，Claude Code 识别的是 `SKILL.md` 里 frontmatter 的 `name` 字段。
