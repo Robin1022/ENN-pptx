@@ -33,10 +33,10 @@
 
 ### 1. 安装 skill
 
-克隆 enn-pptx-2.0 分支到 Claude Code 的 skills 目录：
+克隆 enn-pptx-new-2 分支到 Claude Code 的 skills 目录：
 
 ```bash
-git clone -b enn-pptx-2.0 https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new-2
+git clone -b enn-pptx-new-2 https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new-2
 ```
 
 目录名保持 `enn-pptx-new-2`：`SKILL.md` frontmatter 里的模板保护 hook 在拿不到 `CLAUDE_SKILL_DIR` 时会退回这个默认路径。
