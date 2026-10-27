@@ -129,6 +129,8 @@ ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
 | [`LAYOUT.md`](LAYOUT.md) | 按内容密度分配区域、选择网格、改造模块、检测无效留白 | 否 |
 | [`COMPANY_STYLE.md`](COMPANY_STYLE.md) | 视觉规范（画布/配色/字体/Logo/版式一览） | **是，整篇重测** |
 | [`MODULES.md`](MODULES.md) | 内容原型模块及其复用边界 | **是，重定义或删除** |
+| [`GENERIC.md`](GENERIC.md) | 不套公司模板时的通用配色/字体规范、pptxgenjs 踩坑清单 | 否 |
+| [`EXPERIENCE.md`](EXPERIENCE.md) | 每轮优化的依据和结论，下一轮优化前先读 | 否 |
 
 `PLANNING.md` / `RESEARCH.md` / `LAYOUT.md` 这三份是与具体模板无关的方法论，任何板块都可以原样用——它们也是这个仓库相对官方 pptx skill 的主要增量。
 
@@ -140,6 +142,7 @@ ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
 | `scripts/add_slide.py` | 复制幻灯片或从版式新建，自动处理全部包级注册 |
 | `scripts/clean.py` | 清理不再被引用的幻灯片、媒体和关系条目 |
 | `scripts/office/validate.py` | Schema、关系、内容类型、图表和幻灯片检查（从模板派生的 deck 记得传 `--original`） |
+| `scripts/check_layout.py` | 版面几何检查：越界、压边框、箭头过短、文字溢出（结果需对照渲染图判断） |
 | `scripts/office/soffice.py` | LibreOffice 封装（沙箱环境下直接裸调 `soffice` 会卡住） |
 
 ## 依赖

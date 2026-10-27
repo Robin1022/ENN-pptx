@@ -43,6 +43,14 @@ FATAL_SLIDE_ERRORS: tuple[tuple[re.Pattern[str], str], ...] = (
         re.compile(r"\}nvGrpSpPr': Missing child element"),
         "a <p:nvGrpSpPr> with no children",
     ),
+    (
+        re.compile(r"attribute '[^']+': \[facet 'enumeration'\]"),
+        'an attribute value outside its allowed set (e.g. algn="1000", wrap="None")',
+    ),
+    (
+        re.compile(r"attribute '[^']+': '[^']*' is not a valid value of the"),
+        "an attribute value of the wrong type",
+    ),
 )
 
 
