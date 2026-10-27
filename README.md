@@ -33,13 +33,13 @@
 
 ### 1. 安装 skill
 
-把整个目录放到 Claude Code 的 skills 目录：
+克隆 enn-pptx-2.0 分支到 Claude Code 的 skills 目录：
 
 ```bash
-cp -R enn-pptx2 ~/.claude/skills/enn-pptx2
+git clone -b enn-pptx-2.0 https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new-2
 ```
 
-目录名保持 `enn-pptx2`：`SKILL.md` frontmatter 里的模板保护 hook 在拿不到 `CLAUDE_SKILL_DIR` 时会退回这个默认路径。
+目录名保持 `enn-pptx-new-2`：`SKILL.md` frontmatter 里的模板保护 hook 在拿不到 `CLAUDE_SKILL_DIR` 时会退回这个默认路径。
 
 ### 2. 安装依赖
 
@@ -62,7 +62,7 @@ Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`pop
 仓库已带新奥新智模板 `templates/company-template.pptx`。用其他模板时覆盖这个文件：
 
 ```bash
-cp /path/to/模板.pptx ~/.claude/skills/enn-pptx2/templates/company-template.pptx
+cp /path/to/模板.pptx ~/.claude/skills/enn-pptx-new-2/templates/company-template.pptx
 ```
 
 文件名必须是 `company-template.pptx`，否则 `SKILL.md` 里所有"从模板实例化"的流程都找不到它。
@@ -81,7 +81,7 @@ cp /path/to/模板.pptx ~/.claude/skills/enn-pptx2/templates/company-template.pp
 ### 第 1 步：盘点模板结构
 
 ```bash
-cd ~/.claude/skills/enn-pptx2
+cd ~/.claude/skills/enn-pptx-new-2
 python3 scripts/thumbnail.py templates/company-template.pptx template-thumbs
 ```
 
