@@ -21,7 +21,7 @@
 
 ## ⚠️ 使用前必读
 
-**仓库自带新奥新智模板。** `templates/company-template.pptx` 已收录，用同一套模板的板块 clone 后即可使用；其他板块用自己的模板覆盖同名文件，见 [`templates/README.md`](templates/README.md)。
+**仓库自带新奥新智模板。** `templates/company-template.pptx` 已收录，用同一套模板的板块 clone 后即可使用；其他板块用自己的模板覆盖同名文件，见 [`templates/README.md`](skills/enn-pptx/templates/README.md)。
 
 `templates/` 下的**场景模板**不受此限制，可以直接取用，见下面的[场景模板](#场景模板)。
 
@@ -31,15 +31,20 @@
 
 ## 快速开始
 
-### 1. 安装 skill
+### 1. 安装插件
 
-克隆 enn-pptx-new-2 分支到 Claude Code 的 skills 目录：
+这个分支是 Claude Code 插件，仓库本身同时是插件市场。在 Claude Code 里运行：
 
-```bash
-git clone -b enn-pptx-new-2 https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new-2
+```
+/plugin marketplace add Robin1022/ENN-pptx#enn-pptx-plugin
+/plugin install enn-pptx@enn-pptx
 ```
 
-目录名保持 `enn-pptx-new-2`：`SKILL.md` frontmatter 里的模板保护 hook 在拿不到 `CLAUDE_SKILL_DIR` 时会退回这个默认路径。
+装好后 skill 名为 `enn-pptx:enn-pptx`，可以直接说"用公司模板做 PPT"触发，也可以用 `/enn-pptx:enn-pptx` 显式调用。之后用 `/plugin marketplace update enn-pptx` 获取更新。
+
+插件文件装在 `~/.claude/plugins/` 下，下文的 `templates/`、`scripts/` 等路径都相对于插件里的 `skills/enn-pptx/` 目录。
+
+不想用插件、要像以前一样当普通 skill 用：把 `skills/enn-pptx/` 目录复制到 `~/.claude/skills/enn-pptx`。
 
 ### 2. 安装依赖
 
@@ -59,13 +64,13 @@ Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`pop
 
 ### 3. 确认模板
 
-仓库已带新奥新智模板 `templates/company-template.pptx`。用其他模板时覆盖这个文件：
+仓库已带新奥新智模板 `skills/enn-pptx/templates/company-template.pptx`。用其他模板时，fork 本仓库，在 fork 里覆盖这个文件后从 fork 安装：
 
 ```bash
-cp /path/to/模板.pptx ~/.claude/skills/enn-pptx-new-2/templates/company-template.pptx
+cp /path/to/模板.pptx skills/enn-pptx/templates/company-template.pptx
 ```
 
-文件名必须是 `company-template.pptx`，否则 `SKILL.md` 里所有"从模板实例化"的流程都找不到它。
+不要直接改 `~/.claude/plugins/` 下已安装的副本，插件更新时会被覆盖。文件名必须是 `company-template.pptx`，否则 `SKILL.md` 里所有"从模板实例化"的流程都找不到它。
 
 ### 4. 确认是否需要适配
 
@@ -76,12 +81,12 @@ cp /path/to/模板.pptx ~/.claude/skills/enn-pptx-new-2/templates/company-templa
 
 ## 模板适配
 
-只在换用不同模板时需要做，做一次即可。目的是把 `COMPANY_STYLE.md` 和 `MODULES.md` 里新智模板的数值，换成你这套模板的数值。
+只在换用不同模板时需要做，做一次即可。目的是把 `COMPANY_STYLE.md` 和 `MODULES.md` 里新智模板的数值，换成你这套模板的数值。在你 fork 的仓库里改，改完提交，再从 fork 安装。
 
 ### 第 1 步：盘点模板结构
 
 ```bash
-cd ~/.claude/skills/enn-pptx-new-2
+cd skills/enn-pptx
 python3 scripts/thumbnail.py templates/company-template.pptx template-thumbs
 ```
 
@@ -142,7 +147,7 @@ ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
 |---|---|---|
 | [`templates/campus-hire-defence.pptx`](templates/campus-hire-defence.pptx) | 校招生转正答辩 | 14 |
 
-**校招生转正答辩**：从 HR 的「新进人员任前答辩」表单改造而来，针对校招生场景调整了措辞与结构——`过往业绩亮点及资源情况` 改为 `项目与科研经历`、`目标承诺` 改为 `转正后的工作计划`、`年度重点工作落实思路`（Q1–Q4）改为 `能力提升路径`（首月 / 3 / 6 / 12 个月），并新增 `2.3 从校园到职场的转变与自我复盘`。逐页结构和改造理由见 [`templates/README.md`](templates/README.md)。
+**校招生转正答辩**：从 HR 的「新进人员任前答辩」表单改造而来，针对校招生场景调整了措辞与结构——`过往业绩亮点及资源情况` 改为 `项目与科研经历`、`目标承诺` 改为 `转正后的工作计划`、`年度重点工作落实思路`（Q1–Q4）改为 `能力提升路径`（首月 / 3 / 6 / 12 个月），并新增 `2.3 从校园到职场的转变与自我复盘`。逐页结构和改造理由见 [`templates/README.md`](skills/enn-pptx/templates/README.md)。
 
 ```bash
 cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
@@ -154,14 +159,14 @@ cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
 
 | 文件 | 作用 | 换模板时是否要改 |
 |---|---|---|
-| [`SKILL.md`](SKILL.md) | 入口。任务分流、脚本清单、生成流程、QA 关卡 | 否 |
-| [`PLANNING.md`](PLANNING.md) | 整份 PPT 的页数、叙事、逐页内容规划 + 生成前的确认关卡 | 否 |
-| [`RESEARCH.md`](RESEARCH.md) | 外部检索决策、来源验证、事实标记与引用要求 | 否 |
-| [`LAYOUT.md`](LAYOUT.md) | 按内容密度分配区域、选择网格、改造模块、检测无效留白 | 否 |
-| [`COMPANY_STYLE.md`](COMPANY_STYLE.md) | 视觉规范（画布/配色/字体/Logo/版式一览） | **是，整篇重测** |
-| [`MODULES.md`](MODULES.md) | 内容原型模块及其复用边界 | **是，重定义或删除** |
-| [`PPTXGENJS.md`](PPTXGENJS.md) | 用 pptxgenjs 给正文区补画内容时的踩坑清单 | 否 |
-| [`EXPERIENCE.md`](EXPERIENCE.md) | 每轮优化的依据和结论，下一轮优化前先读 | 否 |
+| [`SKILL.md`](skills/enn-pptx/SKILL.md) | 入口。任务分流、脚本清单、生成流程、QA 关卡 | 否 |
+| [`PLANNING.md`](skills/enn-pptx/PLANNING.md) | 整份 PPT 的页数、叙事、逐页内容规划 + 生成前的确认关卡 | 否 |
+| [`RESEARCH.md`](skills/enn-pptx/RESEARCH.md) | 外部检索决策、来源验证、事实标记与引用要求 | 否 |
+| [`LAYOUT.md`](skills/enn-pptx/LAYOUT.md) | 按内容密度分配区域、选择网格、改造模块、检测无效留白 | 否 |
+| [`COMPANY_STYLE.md`](skills/enn-pptx/COMPANY_STYLE.md) | 视觉规范（画布/配色/字体/Logo/版式一览） | **是，整篇重测** |
+| [`MODULES.md`](skills/enn-pptx/MODULES.md) | 内容原型模块及其复用边界 | **是，重定义或删除** |
+| [`PPTXGENJS.md`](skills/enn-pptx/PPTXGENJS.md) | 用 pptxgenjs 给正文区补画内容时的踩坑清单 | 否 |
+| [`EXPERIENCE.md`](skills/enn-pptx/EXPERIENCE.md) | 每轮优化的依据和结论，下一轮优化前先读 | 否 |
 | [`evals/evals.json`](evals/evals.json) | 3 个测试任务，改动 skill 后开/关 skill 各跑一遍对比 | 换模板后按新模板改写任务 |
 
 `PLANNING.md` / `RESEARCH.md` / `LAYOUT.md` 这三份是与具体模板无关的方法论，任何板块都可以原样用——它们也是这个仓库相对官方 pptx skill 的主要增量。

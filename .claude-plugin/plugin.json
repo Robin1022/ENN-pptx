@@ -1,0 +1,10 @@
+{
+  "name": "enn-pptx",
+  "description": "用新奥公司 PPT 模板生成和编辑内部汇报、方案材料：先规划叙事，再按内容自适应布局，配色、字体、Logo 和版式跟模板保持一致。",
+  "author": {
+    "name": "Robin"
+  },
+  "homepage": "https://github.com/Robin1022/ENN-pptx",
+  "repository": "https://github.com/Robin1022/ENN-pptx",
+  "keywords": ["pptx", "presentation", "template", "新奥"]
+}
