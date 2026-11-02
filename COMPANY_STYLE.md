@@ -10,7 +10,7 @@
 ## 画布
 
 - `12192000 x 6858000` EMU = **13.33in x 7.5in**（16:9 宽屏）
-- 用 pptxgenjs 时对应 `LAYOUT_WIDE`，**不是**默认的 `LAYOUT_16x9`（10in x 5.625in）——新建 `pres.layout` 时必须显式设置，否则右侧/下方内容会画到画布外（写入但不显示，见 SKILL.md 的 pptxgenjs 踩坑清单）
+- 用 pptxgenjs 时对应 `LAYOUT_WIDE`，**不是**默认的 `LAYOUT_16x9`（10in x 5.625in）——新建 `pres.layout` 时必须显式设置，否则右侧/下方内容会画到画布外（写入但不显示，见 `PPTXGENJS.md`）
 
 ## Logo —— 自动继承，不要手动加
 
