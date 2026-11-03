@@ -41,6 +41,8 @@ hooks:
 | **场景已有现成模板**(见下表) | 复制 `templates/` 下的场景模板改文字,**不走** `company-template.pptx` 实例化流程——那会把做好的版面重做一遍 |
 | **新建公司风格演示文稿** | 走下面的默认工作流 |
 | **修改现有 PPT 的某几页(最常见)** | 见「修改现有页面」:改前备份,改完校验和几何检查,写回原文件 |
+| **从几份 PPT 里挑页合成新文件** | `python3 scripts/merge_slides.py -o 新文件.pptx a.pptx:5 b.pptx:2,8`,页码按放映顺序,输出按参数顺序排列。版式、母版、图片自动带上,不手工拷贝部件。之后照常跑四道检查,docProps 用 `check_delivery.py --fix` 修 |
+| **把图片(截图、草图、别处的页面)转成一页 PPT** | 在公司模板「正文页」版式(`slideLayout3`)上,用可编辑的形状和文字按图重画,不整张贴图;文字以图上为准。走「默认工作流」第 2-8 步,规划只在回复里简要列出页面结构,不用等确认 |
 | **读取内容** | `markitdown deck.pptx`(每页一个 `<!-- Slide number: N -->` 区块);缩略图:`python3 scripts/thumbnail.py deck.pptx <prefix>` |
 
 用户没有要求公司品牌/模板、且是跟公司汇报无关的私人演示文稿时,改用通用 `pptx` skill。
@@ -67,6 +69,21 @@ hooks:
 - 直接陈述做法、机制和结论。不用设问式标签、装饰性引号、口号式短语,也不用口语和网络化表达。
 - 每句话落到具体的对象和动作上,读者不靠讲解也能看懂。概括性的说法后面要跟上它具体指什么。
 - 术语沿用材料和已有页面的叫法。新引入的术语要么当页解释清楚,要么换成材料里已有的说法;同一个概念全页只用一种叫法。
+- 版面放不下时,缩短句子、删掉次要信息或调整版面,不要把一句话压缩成自造的缩略词或四字短语。页面上每个短语,不熟悉这个项目的人也要能直接看懂。
+- 分析内容时用到的框架、维度名和内部字段名只用来帮助思考,不写到页面上,除非材料本身就是这么写的。
+- 问题和难点写出原因:什么因素导致了什么困难。不要只罗列表面现象。
+- 用户在本次对话里否掉的措辞和说法,之后每次改文字前都要先对照一遍。改其他地方时也不能再用回去。
+
+## 页内逻辑
+
+技术汇报页常有一条论证链,比如"问题 → 目标 → 难点 → 方案",或者"环节 → 难点 → 解决方案"。链上每一环都要和前后两环接得上:
+
+- **一一对应**:每个难点对应一个问题或环节,每个方案正好解决它对应的那个难点。对不上时,先改难点或方案的表述,不要硬连。
+- **互不重叠**:同一页的几个难点、几个例子各讲一件事,也不重复相邻页已经讲过的内容。两条讲的是同一件事时,合并或者换掉一条。
+- **立场一致**:难点写成"要做到什么、需要克服什么",不写成否定本方方案的话。比如说本方生成的结果"易出错",就和后面讲方案的页面冲突了。
+- **目标写成状态**:目标写成要达到的状态或能力,不写成要做的动作,而且要回应上面列出的问题。
+
+改了链上任何一环,都要把整条链从头读一遍再交付,并在回复里用一两句话说明改完后的对应关系。
 
 ## 修改现有页面
 
@@ -131,10 +148,11 @@ python3 scripts/check_layout.py /tmp/out.pptx --original templates/company-templ
 |---|---|
 | `scripts/thumbnail.py deck.pptx [prefix]` | 每页带标签的缩略图网格,用来挑版式。只认 `.pptx`。**一定传 `prefix`**——默认 `thumbnails`,同目录处理另一份 deck 会覆盖 |
 | `scripts/add_slide.py unpacked/ slide2.xml [--after slideN.xml]` | 复制一页(或从 `slideLayoutN.xml` 新建),自动处理包级注册,并摘掉 `notesSlide`/`tags` 引用。两页形状指向同一个 `<p:tags>` 部件时,真实 PowerPoint 会静默清空整页,而 XSD/python-pptx/LibreOffice 都看不出来——自己手写复制逻辑时要防这个坑。直接处理 `.pptx` 时**必须传 `-o out.pptx`**,否则原地改写输入 |
+| `scripts/merge_slides.py -o out.pptx a.pptx:5 b.pptx:2,8` | 从一份或多份 deck 挑页合成新文件。第一份是底稿(母版、主题、docProps 沿用它);其他 deck 的页面带上所需的版式和母版,同一版式已存在时直接复用,不重复导入;不带讲者备注和 `<p:tags>`。输出必须是新文件 |
 | `scripts/clean.py unpacked/` | 删除不再被引用的幻灯片、媒体和关系。`<p:sldIdLst>` 定稿**之后**运行 |
 | `scripts/office/validate.py deck.pptx [--original src.pptx]` | Schema、关系、内容类型、图表和幻灯片检查,每条失败附修复方法。模板派生的 deck 必须传 `--original` |
 | `scripts/check_delivery.py deck.pptx [--template ...] [--scaffold ...] [--fix]` | 交付前检查:XML 声明 `standalone="yes"`、docProps 作者与旧页标题、模板示例文案残留、场景模板占位、通用占位符与规划标签。`--fix` 自动修 docProps |
-| `scripts/check_layout.py deck.pptx [--original src.pptx] [--slides 5,6]` | 版面几何检查:形状超出画布、图片或方块压到边框、箭头短到只剩箭头头部,以及按字宽估算的文字溢出、文字压边框、连线穿过文字。结果要对照渲染图判断,见「版面几何检查」 |
+| `scripts/check_layout.py deck.pptx [--original src.pptx] [--slides 5,6]` | 版面几何检查:形状超出画布、图片或方块压到边框、箭头短到只剩箭头头部,以及按字宽估算的文字溢出、文字贴着或跨过边框、连线穿过文字。结果要对照渲染图判断,见「版面几何检查」 |
 | `scripts/office/soffice.py --headless --convert-to pdf deck.pptx` | LibreOffice 封装,自动配置运行环境,避免裸调 `soffice` 卡住 |
 | `scripts/guard_templates.py` | hook 脚本,由 frontmatter 自动挂载,拦截写入原始模板的操作,不需要手动调用 |
 
@@ -251,6 +269,15 @@ python3 scripts/check_layout.py output.pptx --original src.pptx --slides 5   # �
 
 ## 转换成图片
 
+先确认本机装了这份 deck 用到的中文字体。LibreOffice 找不到字体时会换用其他字体,字宽和换行都和 PowerPoint 不一样,渲染图上的压线、溢出就不能作为判断依据:
+
+```bash
+unzip -p output.pptx 'ppt/slides/*.xml' | grep -o 'typeface="[^"+][^"]*"' | sort | uniq -c   # deck 用到的字体
+fc-list :lang=zh family | grep -iE "Microsoft YaHei|DengXian"                              # 本机有没有
+```
+
+缺字体时,LibreOffice 每次渲染挑的替代字体都可能不一样,有时是手写体,同一份文件前后两次渲染的字宽也不同,所以改前改后的对比图不能拿来比换行。在回复里说明渲染图的换行可能和 PowerPoint 不一致,并告诉用户怎么安装,不要自行安装。装了 Office for Mac 的,字体在 `/Applications/Microsoft PowerPoint.app/Contents/Resources/DFonts/`,把 `msyh*.ttc`、`Deng*.ttf` 复制到 `~/Library/Fonts/` 就行。
+
 ```bash
 python3 scripts/office/soffice.py --headless --convert-to pdf output.pptx
 rm -f slide-*.jpg
@@ -273,4 +300,4 @@ brew install poppler                                    # pdftoppm,转图片(Lin
 
 ## 测试
 
-`evals/evals.json` 有 3 个测试任务。改动本 skill 后,在新会话里分别开启和关闭本 skill 各跑一遍,对比结果,不变差才保留改动。
+`evals/evals.json` 有 6 个测试任务。改动本 skill 后,在新会话里分别开启和关闭本 skill 各跑一遍,对比结果,不变差才保留改动。
