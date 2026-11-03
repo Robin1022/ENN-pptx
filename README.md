@@ -40,7 +40,21 @@
 /plugin install enn-pptx@enn-pptx
 ```
 
-装好后 skill 名为 `enn-pptx:enn-pptx`，可以直接说"用公司模板做 PPT"触发，也可以用 `/enn-pptx:enn-pptx` 显式调用。之后用 `/plugin marketplace update enn-pptx` 获取更新。
+装好后 skill 名为 `enn-pptx:enn-pptx`，可以直接说"用公司模板做 PPT"触发，也可以用 `/enn-pptx:enn-pptx` 显式调用。
+
+### 获取更新
+
+插件更新默认不会自动推送到你的机器上。建议装好后打开自动更新，只需操作一次：
+
+1. 在 Claude Code 里输入 `/plugin`
+2. 进入 **Marketplaces**，选中 `enn-pptx`
+3. 选择 **Enable auto-update**
+
+打开后，Claude Code 每次启动会话时会在后台检查有没有新版本，有就自动更新。
+
+不想打开自动更新，也可以手动更新：在 Claude Code 里运行 `/plugin marketplace update enn-pptx`，或在终端运行 `claude plugin update enn-pptx@enn-pptx`。
+
+不论哪种方式，更新后都要新开一个会话，或者运行 `/reload-plugins`，新版本才会生效。
 
 插件文件装在 `~/.claude/plugins/` 下，下文的 `templates/`、`scripts/` 等路径都相对于插件里的 `skills/enn-pptx/` 目录。
 
