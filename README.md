@@ -162,7 +162,7 @@ cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
 | [`MODULES.md`](MODULES.md) | 内容原型模块及其复用边界 | **是，重定义或删除** |
 | [`PPTXGENJS.md`](PPTXGENJS.md) | 用 pptxgenjs 给正文区补画内容时的踩坑清单 | 否 |
 | [`EXPERIENCE.md`](EXPERIENCE.md) | 每轮优化的依据和结论，下一轮优化前先读 | 否 |
-| [`evals/evals.json`](evals/evals.json) | 3 个测试任务，改动 skill 后开/关 skill 各跑一遍对比 | 换模板后按新模板改写任务 |
+| [`evals/evals.json`](evals/evals.json) | 6 个测试任务，改动 skill 后开/关 skill 各跑一遍对比 | 换模板后按新模板改写任务 |
 
 `PLANNING.md` / `RESEARCH.md` / `LAYOUT.md` 这三份是与具体模板无关的方法论，任何板块都可以原样用——它们也是这个仓库相对官方 pptx skill 的主要增量。
 
@@ -172,10 +172,11 @@ cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
 |---|---|
 | `scripts/thumbnail.py` | 生成带标签的缩略图网格，用来挑版式（第二个参数一定要传，否则会覆盖同目录的旧缩略图） |
 | `scripts/add_slide.py` | 复制幻灯片或从版式新建，自动处理全部包级注册 |
+| `scripts/merge_slides.py` | 从多份 PPT 挑页合成新文件，自动带上版式、母版和图片 |
 | `scripts/clean.py` | 清理不再被引用的幻灯片、媒体和关系条目 |
 | `scripts/office/validate.py` | Schema、关系、内容类型、图表和幻灯片检查（从模板派生的 deck 记得传 `--original`） |
 | `scripts/office/soffice.py` | LibreOffice 封装（自动配置运行环境，避免裸调 `soffice` 卡住） |
-| `scripts/check_layout.py` | 版面几何检查：越界、压边框、箭头过短、文字溢出（结果需对照渲染图判断） |
+| `scripts/check_layout.py` | 版面几何检查：越界、压边框、文字贴边、箭头过短、文字溢出（结果需对照渲染图判断） |
 | `scripts/check_delivery.py` | 交付前检查：XML 声明、docProps 作者与旧页标题、模板示例文案残留、场景模板占位；`--fix` 自动修 docProps |
 | `scripts/guard_templates.py` | 模板保护 hook，由 `SKILL.md` frontmatter 自动挂载，拦截写入 `templates/` 原始模板的操作 |
 

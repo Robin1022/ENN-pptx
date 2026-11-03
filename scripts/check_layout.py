@@ -9,7 +9,7 @@ Reads shape coordinates from the slide XML and reports:
     - 箭头过短,只剩箭头头部(带箭头的连接线、块箭头)
   估算(按字宽估算文字占位):
     - 文字可能溢出有边框或底色的框
-    - 文字可能跨过所在框的边框
+    - 文字可能贴着或跨过所在框的边框
     - 连接线可能穿过文字
 
 几何事实不等于缺陷:有意压在边框上的徽标、刻意画成三角的小箭头也会被列出。
@@ -50,11 +50,15 @@ BLOCK_ARROWS = {
     "upArrow": "y", "downArrow": "y", "upDownArrow": "y",
 }
 ARROW_LEN = {"sm": 2, "med": 3, "lg": 5}  # arrowhead length as a multiple of line width
+# Thin lines still get a full-size head: a 0.75pt line with a medium head renders a head
+# about 0.08" long, so size heads from at least this width.
+MIN_HEAD_W = 2 * 12700
 # Only these outlines match their bounding box; skewed slabs, cans and diamonds do not.
 RECT_LIKE = {
     "rect", "roundRect", "snip1Rect", "snip2SameRect", "round1Rect", "round2SameRect",
     "round2DiagRect", "flowChartProcess", "flowChartAlternateProcess",
 }
+CLEAR = 1.5 * 12700  # text closer than this to a border reads as touching it
 TINY_ARROW = 0.15 * 914400  # block arrows this narrow are drawn as arrowheads on purpose
 OVERFLOW_HINT = 10 * 12700
 
@@ -105,7 +109,8 @@ class Shape:
     arrow_ends: list = field(default_factory=list)  # [(end, len, width_emu)]
     line_w: float = 9525
     text: str = ""
-    text_box: Box | None = None  # estimated extent of the rendered text
+    text_box: Box | None = None  # estimated extent of the rendered text, insets included
+    glyph_box: Box | None = None  # the same without insets: where the glyphs are drawn
     overflow: float = 0.0  # estimated text height beyond the box, in EMU
 
     def label(self):
@@ -133,10 +138,10 @@ def run_size(el, default):
 
 
 def estimate_text(sp, box: Box):
-    """Return (text, text_box, overflow) from a rough line-wrap estimate."""
+    """Return (text, text_box, glyph_box, overflow) from a rough line-wrap estimate."""
     tx = sp.find(f"{P}txBody")
     if tx is None:
-        return "", None, 0.0
+        return "", None, None, 0.0
     body = tx.find(f"{A}bodyPr")
     body = body if body is not None else ET.fromstring(f'<a:bodyPr xmlns:a="{NS["a"]}"/>')
     lI = int(body.get("lIns", 91440)); rI = int(body.get("rIns", 91440))
@@ -182,7 +187,7 @@ def estimate_text(sp, box: Box):
 
     text = "\n".join(texts).strip()
     if not text:
-        return "", None, 0.0
+        return "", None, None, 0.0
     text_h = lines_h + tI + bI
     text_w = widest + lI + rI
     anchor = body.get("anchor", "t")
@@ -202,7 +207,8 @@ def estimate_text(sp, box: Box):
     overflow = 0.0 if autofit else max(0.0, text_h - box.h)
     if not wrap and not autofit:
         overflow = max(overflow, text_w - box.w)
-    return text, Box(tx_, ty, text_w, text_h), overflow
+    glyphs = Box(tx_ + lI, ty + tI, widest, lines_h)
+    return text, Box(tx_, ty, text_w, text_h), glyphs, overflow
 
 
 def has_visible_line(sppr, style) -> bool:
@@ -291,7 +297,7 @@ def walk(tree, xf, out):
                 if e is not None and e.get("type", "none") != "none":
                     s.arrow_ends.append((end, e.get("len", "med"), s.line_w))
         if tag == "sp":
-            s.text, s.text_box, s.overflow = estimate_text(el, s.box)
+            s.text, s.text_box, s.glyph_box, s.overflow = estimate_text(el, s.box)
         out.append(s)
 
 
@@ -354,7 +360,7 @@ def check_slide(shapes, size):
     for s in shapes:
         if is_line(s) and s.arrow_ends:
             length = math.hypot(s.box.w, s.box.h)
-            head = max(ARROW_LEN.get(l, 3) * max(w, 12700) for _, l, w in s.arrow_ends)
+            head = max(ARROW_LEN.get(l, 3) * max(w, MIN_HEAD_W) for _, l, w in s.arrow_ends)
             need = head * len(s.arrow_ends) + TOL
             if length < need:
                 errors.append(f"{s.label()} 箭头长 {length / EMU_PER_PT:.0f}pt,只够画出箭头头部(至少 {need / EMU_PER_PT:.0f}pt)")
@@ -395,7 +401,15 @@ def check_slide(shapes, size):
                 if c is s or c.box.area < 1.5 * b.area:
                     continue
                 share = c.box.inter(b) / b.area
-                if low < share and not c.box.contains(b):
+                if what == "文字" and low < share:
+                    # A last line sitting on the top or bottom border looks pressed into it
+                    # even when it does not cross it. Widths of wrapped lines are too rough
+                    # to judge the left and right sides the same way.
+                    g = s.glyph_box
+                    if not c.box.contains(b) or g.y < c.box.y + CLEAR or g.b > c.box.b - CLEAR:
+                        hints.append(f"{s.label()} 的文字贴着或跨过了 {c.label()} 的边框")
+                        break
+                elif low < share and not c.box.contains(b):
                     msg = f"{s.label()} 的{what}跨过了 {c.label()} 的边框"
                     (errors if exact else hints).append(msg)
                     break

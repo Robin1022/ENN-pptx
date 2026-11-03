@@ -41,7 +41,7 @@ Logo 图片在 `slideMaster1` 里，不在单页 slide 里。凡是新页面用�
 - 英文/数字：`Arial`（少量出现，用于纯数字/英文标签）
 - 图标符号：`Wingdings`（用于项目符号图形，不要手打这个字体名去写正文）
 
-这几款都是 Office/WPS 中文环境的标配字体，LibreOffice 视觉 QA 渲染时不会有宽度替换问题，可以放心信任 QA 阶段的文字溢出检查结果。中文正文一律微软雅黑/等线，不要换成 Calibri、Cambria 等英文字体。
+这几款是 Office/WPS 自带的字体，macOS 和 Linux 系统默认没有。渲染前先按 `SKILL.md`「转换成图片」确认已安装，否则 LibreOffice 会换用其他字体，渲染图上的换行和溢出会和 PowerPoint 不一致。中文正文一律微软雅黑/等线，不要换成 Calibri、Cambria 等英文字体。
 
 ## 可用版式一览（全部属于 `slideMaster1`，都会自动带 logo）
 
