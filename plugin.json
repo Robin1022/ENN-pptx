@@ -1,0 +1,37 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "enn-pptx-new-2",
+  "version": "1.0.0",
+  "description": "使用新奥／ENNEW 公司模板制作、修改和检查可编辑的 PowerPoint 演示文稿。",
+  "author": {
+    "name": "Robin1022"
+  },
+  "homepage": "https://github.com/Robin1022/ENN-pptx/tree/enn-pptx-new-2-codex",
+  "repository": "https://github.com/Robin1022/ENN-pptx",
+  "keywords": [
+    "powerpoint",
+    "pptx",
+    "ennew",
+    "新奥"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "enn-pptx-new-2",
+        "shortDescription": "用新奥公司模板制作与修改可编辑 PPT",
+        "longDescription": "提供新奥／ENNEW 公司模板、可编辑页面制作方法、选页合并脚本，以及文件、文案和布局检查。需本机具备相关 Python 依赖，渲染还需 LibreOffice、Poppler 和相应字体。",
+        "developerName": "Robin1022",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://github.com/Robin1022/ENN-pptx",
+        "defaultPrompt": [
+          "使用 $enn-pptx-new-2 修改这份公司汇报，沿用原文件样式。",
+          "使用 $enn-pptx-new-2，按公司模板制作技术方案 PPT。"
+        ]
+      }
+    }
+  }
+}

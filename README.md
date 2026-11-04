@@ -1,193 +1,97 @@
-# ENN-pptx 2.0
+# enn-pptx-new-2 · Codex 插件
 
-给 Codex 用的**新奥集团 PPT 模板生成 skill** —— 通用 [pptx skill](https://github.com/anthropics/skills/tree/main/skills/pptx) 的定制分支。底层机制（pptxgenjs 踩坑清单、XML 直接编辑、校验器）继承自官方版本，新增的是**默认套用新奥的 PPT 模板**，以及一套"先规划叙事、再自适应布局"的生成流程。
+使用新奥／ENNEW 公司模板制作和修改可编辑 PPT，包含两份模板、页面编辑与合并脚本，以及交付质量检查。
 
-生成时不逐页套模块，而是先对用户素材做整体叙事规划，显式判断是否需要外部知识检索，再按每页的内容量和信息层级自适应选择版式。核心主张是**内容决定结构，模板决定风格**：栏数、条目数、图分几层跟着实际内容走，配色/字体/Logo/图形语言严格跟模板一致。
+本分支 `enn-pptx-new-2-codex` 提供 Codex 版。原 Claude Code 版本保留在 `enn-pptx-new-2` 分支。插件和独立 Skill 共用 `skills/enn-pptx-new-2/`，只维护一份模板、脚本和制作规则。
 
-面向新奥集团各板块使用。当前视觉规范基线取自**新奥新智（ENNEW）**的模板；其他板块如果用的是另一套模板，需要按下面的[模板适配](#模板适配)重测一遍。
+## 安装插件（推荐给同事）
 
-## 内容
-
-- 使用前必读
-- 快速开始：安装 skill、依赖、放置模板
-- 模板适配：换用其他板块模板时的三步重测
-- 场景模板
-- 目录：各文件作用
-- 脚本
-- 依赖
-- 来源
-
----
-
-## ⚠️ 使用前必读
-
-**仓库自带新奥新智模板。** `templates/company-template.pptx` 已收录，用同一套模板的板块 clone 后即可使用；其他板块用自己的模板覆盖同名文件，见 [`templates/README.md`](templates/README.md)。
-
-`templates/` 下的**场景模板**不受此限制，可以直接取用，见下面的[场景模板](#场景模板)。
-
-**文档里的视觉数值有板块归属。** `COMPANY_STYLE.md` 的画布尺寸、Logo 坐标、配色表、字体、9 个版式一览，以及 `MODULES.md` 的三个内容模块，全部是从**新奥新智模板**实测得出的。如果你所在板块用的是同一套模板，可以直接用；如果不是，这些数值需要重测，否则生成的 PPT 在 Logo 位置、配色和版式编号上都会对不上。
-
----
-
-## 快速开始
-
-### 1. 安装 skill
-
-本分支 `enn-pptx-new-2-codex` 为 Codex 适配版；原 Claude Code 版本保留在 `enn-pptx-new-2` 分支。技能名称与安装目录均为 `enn-pptx-new-2`。
-
-将技能放入 Codex 的本地 skills 目录（当前安装目录为 `~/.codex/skills/enn-pptx-new-2`）：
+需要支持 `codex plugin` 的 Codex CLI，以及 Git。添加此仓库的 Codex 分支为插件市场，再安装：
 
 ```bash
-git clone -b enn-pptx-new-2-codex https://github.com/Robin1022/ENN-pptx.git ~/.codex/skills/enn-pptx-new-2
+codex plugin marketplace add Robin1022/ENN-pptx --ref enn-pptx-new-2-codex
+codex plugin add enn-pptx-new-2@enn-pptx
 ```
 
-当前保留技能名 `enn-pptx-new-2`，可显式使用 `$enn-pptx-new-2`。资源按实际技能目录定位，不依赖 Claude 环境变量。运行前阅读 [CODEX.md](CODEX.md)，使用独立工作目录并记录模板指纹。
+安装后新开会话，使用 `$enn-pptx-new-2`，例如：
 
-### 2. 安装依赖
+> 使用 $enn-pptx-new-2，帮我修改这份公司汇报的第 3 页，沿用原文件的样式。
+
+在支持插件的 Codex 桌面入口，也可打开插件浏览器检查安装结果。如果看不到新插件，重启客户端。上述命令添加的是本项目的 Git 插件市场，不是向公共插件目录发布。
+
+本插件只提供本地 Skill、模板和脚本，不包含 MCP 服务，不要求连接账号，不会在安装时自动安装软件。制作和渲染所需依赖见下文。
+
+## 更新和卸载
+
+GitHub 上推送更新后，用户需要刷新 Git 市场；不要将推送等同于本机立即生效：
 
 ```bash
-# Python 依赖：文本提取 / 缩略图 / 清理 / 校验
-pip install "markitdown[pptx]" Pillow defusedxml lxml
-
-# Node 依赖：pptxgenjs 用于绘制内容区
-npm install pptxgenjs
-
-# 系统依赖：LibreOffice 用于转 PDF，Poppler 用于转图片做视觉 QA
-brew install --cask libreoffice   # macOS
-brew install poppler
+codex plugin marketplace upgrade enn-pptx
+codex plugin list --json
 ```
 
-Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`poppler-utils`）。
-
-### 3. 确认模板
-
-仓库已带新奥新智模板 `templates/company-template.pptx`。用其他模板时覆盖这个文件：
+刷新后新开会话，检查插件版本；如旧版本仍被使用，可通过插件浏览器重新安装，或执行：
 
 ```bash
-cp /path/to/模板.pptx ~/.codex/skills/enn-pptx-new-2/templates/company-template.pptx
+codex plugin remove enn-pptx-new-2@enn-pptx
+codex plugin add enn-pptx-new-2@enn-pptx
 ```
 
-文件名必须是 `company-template.pptx`，否则 `SKILL.md` 里所有"从模板实例化"的流程都找不到它。
+卸载插件只需上面的 `remove` 命令，不会删除用户已经生成的 PPT。
 
-### 4. 确认是否需要适配
+## 仅安装 Skill
 
-- **用的是新奥新智那套模板** → 到这里就可以开始用了
-- **用的是其他板块的模板** → 继续下一节
-
----
-
-## 模板适配
-
-只在换用不同模板时需要做，做一次即可。目的是把 `COMPANY_STYLE.md` 和 `MODULES.md` 里新智模板的数值，换成你这套模板的数值。
-
-### 第 1 步：盘点模板结构
+不使用插件时，可克隆仓库并把其中的 Skill 链接到本地技能目录。以下为 macOS／Linux 示例：
 
 ```bash
-cd ~/.codex/skills/enn-pptx-new-2
-python3 scripts/thumbnail.py templates/company-template.pptx template-thumbs
+git clone -b enn-pptx-new-2-codex https://github.com/Robin1022/ENN-pptx.git "$HOME/ENN-pptx-codex"
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+ln -s "$HOME/ENN-pptx-codex/skills/enn-pptx-new-2" "${CODEX_HOME:-$HOME/.codex}/skills/enn-pptx-new-2"
 ```
 
-会生成 `template-thumbs.jpg`（超过 12 页拆成多张），是带编号标签的缩略图网格。对着它确认：
+若目标目录已有旧版，先备份并移走旧目录，不要覆盖或嵌套复制。Windows 可复制该 Skill 文件夹到本地技能目录，之后更新时重新复制。
 
-- 模板有几个版式（`slideLayoutN.xml`），各是什么用途
-- Logo 在哪一层——母版（`slideMaster`）还是每页单独放
-- 有没有可以当作"内容原型"复用的示例正文页
+通过符号链接安装后，在仓库目录执行 `git pull --ff-only` 即可更新文件。独立 Skill 和插件选择一种安装即可；同时安装可能出现同名技能重复。
 
-同时解压模板看 XML 结构：
+## 本机依赖
 
-```bash
-python3 -c "import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall('/tmp/tpl')" templates/company-template.pptx
-ls /tmp/tpl/ppt/slideLayouts/ /tmp/tpl/ppt/slides/
-```
+插件安装完成不代表生成与渲染依赖已经安装。按实际任务准备：
 
-### 第 2 步：重测 `COMPANY_STYLE.md` 的八项
-
-这是适配工作量最大的一步。下表右列是新智模板的实测值，需要逐项换成你这套模板的：
-
-| 项目 | 怎么测 | 新智模板的基线值 |
-|---|---|---|
-| **画布尺寸** | `/tmp/tpl/ppt/presentation.xml` 的 `<p:sldSz>` | `12192000 x 6858000` EMU（13.33in × 7.5in） |
-| **Logo 位置与尺寸** | 在 `slideMaster1.xml` 里找 `<p:pic>` 的 `<a:off>` / `<a:ext>` | 位置 `(10.56in, 0.21in)`，尺寸 `2.41in × 0.85in` |
-| **Logo 继承方式** | 确认 Logo 在母版还是版式上 | 母版承载，9 个版式自动继承 |
-| **配色表** | grep 各页 `srgbClr`，统计高频色值 | 蓝 `2B5BD7`、青绿 `2E9482`、警示红 `FF0000` 等 |
-| **强调色选用规则** | 观察不同主题页面用了什么色 | "组织/认知类用蓝、技术/架构类用青绿" |
-| **字体** | grep `latin typeface` / `ea typeface` | 微软雅黑 / 等线 / Arial |
-| **版式一览表** | 逐个看 `slideLayoutN.xml` 的名称和占位符 | 9 个版式的名称、占位符、适用场景 |
-| **常见图形语言** | 从示例页归纳视觉习惯 | 圆角卡片、虚线边框、编号徽标、分层色块 |
-
-> 改完记得把文件顶部的来源说明也更新，写清楚是哪个板块的模板、实测日期是什么，方便日后换模板时知道该重测什么。
-
-### 第 3 步：重定义或删除 `MODULES.md`
-
-现有的三个模块（反思模块 / 技术图谱模块 / 技术方案详情模块）绑定在新智模板的三个示例正文页（`slide1/2/3.xml`）上。
-
-- **你的模板也有可复用的原型页** → 按同样的格式重写：每个模块写清楚主标题性质、副标题性质、正文结构、强调色，以及"结构不匹配时怎么改造"的指引
-- **模板只有空白版式，没有原型页** → 把 `MODULES.md` 内容清空或删除，并去掉 `SKILL.md`、`PLANNING.md`、`LAYOUT.md` 里对它的引用。skill 依然可用，只是每页都走"从版式实例化 + 按图形语言搭建"的路径
-
-**不要保留原有的三个模块定义不改**——它们指向的 `slide1/2/3.xml` 在你的模板里不存在或内容完全不同，会让模型按错误的假设去复制页面。
-
-### 适配完成检查
-
-- [ ] `templates/company-template.pptx` 已换成本板块的模板
-- [ ] 依赖已装齐（`python3 scripts/office/validate.py --help` 能跑通）
-- [ ] `COMPANY_STYLE.md` 八项数值已换成本板块模板的实测值
-- [ ] `MODULES.md` 已重定义或已删除（并清理了引用）
-- [ ] 跑一遍完整流程生成一份测试 deck，视觉检查 Logo 位置、配色、字体是否正确
-
----
-
-## 场景模板
-
-`templates/` 下除了公司模板 `company-template.pptx`，还收了开箱即用的场景模板。它们已清空全部个人信息，复制一份改文字即可，**不需要**经过"从模板实例化"的生成流程。
-
-| 模板 | 场景 | 页数 |
-|---|---|---|
-| [`templates/campus-hire-defence.pptx`](templates/campus-hire-defence.pptx) | 校招生转正答辩 | 14 |
-
-**校招生转正答辩**：从 HR 的「新进人员任前答辩」表单改造而来，针对校招生场景调整了措辞与结构——`过往业绩亮点及资源情况` 改为 `项目与科研经历`、`目标承诺` 改为 `转正后的工作计划`、`年度重点工作落实思路`（Q1–Q4）改为 `能力提升路径`（首月 / 3 / 6 / 12 个月），并新增 `2.3 从校园到职场的转变与自我复盘`。逐页结构和改造理由见 [`templates/README.md`](templates/README.md)。
-
-```bash
-cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
-```
-
----
-
-## 目录
-
-| 文件 | 作用 | 换模板时是否要改 |
-|---|---|---|
-| [`SKILL.md`](SKILL.md) | 入口。任务分流、脚本清单、生成流程、QA 关卡 | 否 |
-| [`PLANNING.md`](PLANNING.md) | 整份 PPT 的页数、叙事、逐页内容规划与授权处理 | 否 |
-| [`RESEARCH.md`](RESEARCH.md) | 外部检索决策、来源验证、事实标记与引用要求 | 否 |
-| [`LAYOUT.md`](LAYOUT.md) | 按内容密度分配区域、选择网格、改造模块、检测无效留白 | 否 |
-| [`COMPANY_STYLE.md`](COMPANY_STYLE.md) | 视觉规范（画布/配色/字体/Logo/版式一览） | **是，整篇重测** |
-| [`MODULES.md`](MODULES.md) | 内容原型模块及其复用边界 | **是，重定义或删除** |
-| [`PPTXGENJS.md`](PPTXGENJS.md) | 用 pptxgenjs 给正文区补画内容时的踩坑清单 | 否 |
-| [`EXPERIENCE.md`](EXPERIENCE.md) | 每轮优化的依据和结论，下一轮优化前先读 | 否 |
-| [`evals/evals.json`](evals/evals.json) | 6 个测试任务，改动 skill 后开/关 skill 各跑一遍对比 | 换模板后按新模板改写任务 |
-
-`PLANNING.md` / `RESEARCH.md` / `LAYOUT.md` 这三份是与具体模板无关的方法论，任何板块都可以原样用——它们也是这个仓库相对官方 pptx skill 的主要增量。
-
-## 脚本
-
-| 脚本 | 作用 |
+| 任务 | 依赖 |
 |---|---|
-| `scripts/thumbnail.py` | 生成带标签的缩略图网格，用来挑版式（第二个参数一定要传，否则会覆盖同目录的旧缩略图） |
-| `scripts/add_slide.py` | 复制幻灯片或从版式新建，自动处理全部包级注册 |
-| `scripts/merge_slides.py` | 从多份 PPT 挑页合成新文件，自动带上版式、母版和图片 |
-| `scripts/clean.py` | 清理不再被引用的幻灯片、媒体和关系条目 |
-| `scripts/office/validate.py` | Schema、关系、内容类型、图表和幻灯片检查（从模板派生的 deck 记得传 `--original`） |
-| `scripts/office/soffice.py` | LibreOffice 封装（自动配置运行环境，避免裸调 `soffice` 卡住） |
-| `scripts/check_layout.py` | 版面几何检查：越界、压边框、文字贴边、箭头过短、文字溢出（结果需对照渲染图判断） |
-| `scripts/check_delivery.py` | 交付前检查：XML 声明、docProps 作者与旧页标题、模板示例文案残留、场景模板占位；`--fix` 自动修 docProps |
-| `scripts/guard_templates.py` | 显式记录／复核原始模板 SHA-256；发现修改、丢失或新增模板时报错，不是自动拦截 hook |
+| XML 编辑、结构检查 | Python 3.10+、defusedxml、lxml |
+| 文本提取与缩略图 | markitdown[pptx]、Pillow |
+| PDF 与图片渲染 | LibreOffice、Poppler（pdftoppm）及 PPT 所用字体 |
+| 用 PptxGenJS 新画内容（可选） | Node.js、pptxgenjs |
 
-## 依赖
+建议 Python 依赖安装在已有环境或独立虚拟环境中。缺少依赖时不会自动安装；缺少字体时渲染换行可能与 PowerPoint 不同。具体安装命令和字体说明见 [Skill 使用说明](skills/enn-pptx-new-2/README.md)及 [Codex 执行说明](skills/enn-pptx-new-2/CODEX.md)。
 
-`pptxgenjs`（npm）· `markitdown[pptx]`、`Pillow`、`defusedxml`、`lxml`（pip）· LibreOffice（`soffice`）· `pdftoppm`（Poppler）
+## 版本维护与打包
 
-## 来源
+1. 在 `skills/enn-pptx-new-2/` 修改唯一的 Skill 内容，不编辑用户插件缓存。
+2. 更新根目录 `plugin.json` 的版本。打包脚本自动同步 Codex 兼容清单，避免维护两套版本号。
+3. 运行下面命令，检查清单并生成 ZIP：
 
-底层机制与 `scripts/` 下的工具脚本来自 Anthropic 官方 [pptx skill](https://github.com/anthropics/skills/tree/main/skills/pptx)。该 skill 为 source-available，其许可条款见上游仓库的 `skills/pptx/LICENSE.txt`，使用前请自行确认。
+```bash
+python3 tools/build_plugin.py
+```
 
-本仓库新增的部分是 `PLANNING.md` / `RESEARCH.md` / `LAYOUT.md` / `MODULES.md` 所描述的规划与布局方法论，以及围绕公司模板的适配流程。
+输出为 `dist/enn-pptx-new-2-<版本>.zip`，可分享给需要离线拷贝的同事。解压后可从解压目录添加本地插件市场，再安装；ZIP 中包含市场清单。Git 安装优先使用上面的分支命令。
+
+```bash
+codex plugin marketplace add /absolute/path/to/unpacked-plugin
+codex plugin add enn-pptx-new-2@enn-pptx
+```
+
+维护时同步提交生成的 `.codex-plugin/plugin.json`。发布插件包不会自动安装 LibreOffice、字体或其他依赖。
+
+## 内容与来源
+
+- [Skill 入口与制作规范](skills/enn-pptx-new-2/SKILL.md)
+- [公司视觉规范](skills/enn-pptx-new-2/COMPANY_STYLE.md)
+- [模板说明](skills/enn-pptx-new-2/templates/README.md)
+- [历史优化记录](skills/enn-pptx-new-2/EXPERIENCE.md)
+
+底层工具来自 Anthropic 的 PPTX Skill，沿用原有来源说明；本项目没有为上游代码另行声明许可。公司模板与相关素材的使用范围由其权利人决定。
+
+插件格式和分发方式参考 [OpenAI 官方插件打包文档](https://developers.openai.com/plugins/build/plugins)。

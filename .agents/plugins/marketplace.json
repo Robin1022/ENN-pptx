@@ -1,0 +1,20 @@
+{
+  "name": "enn-pptx",
+  "interface": {
+    "displayName": "ENN PPT 插件"
+  },
+  "plugins": [
+    {
+      "name": "enn-pptx-new-2",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
