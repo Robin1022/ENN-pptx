@@ -1,0 +1,4 @@
+interface:
+  display_name: "enn-pptx-new-2"
+  short_description: "制作新奥公司模板演示文稿，沿用既有样式修改页面并执行交付检查"
+  default_prompt: "使用 $enn-pptx-new-2，按公司模板或现有文件的样式制作和修改演示文稿。"

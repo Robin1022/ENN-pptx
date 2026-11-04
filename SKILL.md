@@ -1,28 +1,31 @@
 ---
 name: enn-pptx-new-2
-description: "用公司自有 PPT 模板生成/编辑内部汇报、方案材料等 .pptx 文件。触发场景：用户要求「用公司模板」「公司PPT」「内部汇报」「新奥」「新奥新智/ENNEW」相关的演示文稿制作,或明确引用 templates/company-template.pptx。与通用 pptx skill 的区别:这个 skill 默认套用公司品牌(配色/字体/Logo/版式),不做与品牌无关的通用/个人 PPT——那种场景交给通用 pptx skill。"
-hooks:
-  PreToolUse:
-    - matcher: "Bash|Edit|Write|MultiEdit"
-      hooks:
-        - type: command
-          command: "f=\"${CLAUDE_SKILL_DIR:-$HOME/.claude/skills/enn-pptx-new-2}/scripts/guard_templates.py\"; [ ! -f \"$f\" ] || python3 \"$f\""
+description: "使用新奥／ENNEW 公司模板制作 PPT，或沿用现有公司演示文稿的样式修改页面、合并选页、将截图重画为可编辑幻灯片。适用于公司汇报、技术方案、转正答辩；不用于无公司品牌要求的私人演示文稿。"
 ---
 
 # 公司 PPTX 生成、编辑与分析
 
 ## 不可省的规则
 
-1. **新建 deck 先交整体规划,用户确认后才动手**(`PLANNING.md`)。素材缺口自主推理补全,但推测内容必须标 `[推理补充]` / `[待确认假设]` / `[示意数据]`,不得写成用户提供的事实。这些标记只写在规划和回复里,不写到幻灯片上(见「内容来源」)。
-2. **模板原文件只读。** 一律 `cp` 出工作副本再操作;写入 `templates/` 下模板的命令会被 hook 拦截。
+1. **新建 deck 先规划再生成**(`PLANNING.md`)。用户要求先审规划时等待确认；用户已明确要求直接制作、已确认规划或授权自主决定时，说明合理假设后继续，不重复索要确认。素材缺口自主推理补全,但推测内容必须标 `[推理补充]` / `[待确认假设]` / `[示意数据]`,不得写成用户提供的事实。这些标记只写在规划和回复里,不写到幻灯片上(见「内容来源」)。
+2. **模板原文件只读。** 一律 `cp` 出工作副本再操作;不要向 `templates/` 写入输出；工作开始时记录模板 SHA-256，交付前复核。完整性检查只能发现改动，不能阻止写入，不能声称存在自动 hook 保护。
 3. **成稿不得带模板示例文案。** 所有 `add_slide.py` 复制完成后,从 `<p:sldIdLst>` 移除示例页,再跑 `clean.py`。
 4. **交付前四道检查全过才算完成**:`validate.py --original`、`check_delivery.py`、`check_layout.py`、渲染后的视觉 QA。任何一道失败,修完从失败的那一步重跑。
+
+## Codex 运行方式
+
+- 本技能自包含，不依赖已删除的通用 `pptx` 技能，也不依赖 Claude Code、`~/.claude` 或 Claude hook。技能名称和安装目录统一为 `enn-pptx-new-2`。
+- 使用本次实际读取的 `SKILL.md` 所在目录定位资源，不从项目当前目录猜测路径。脚本用绝对路径调用，或通过执行工具的工作目录参数指定技能目录。
+- 每个任务在项目可写目录或系统临时目录新建唯一工作目录；所有解包、备份、PDF 和预览图均写在其中。不要复用固定的 `/tmp/deck.pptx`、`/tmp/unpacked`，也不要在技能目录安装依赖或写输出。
+- 只读检查和已授权的生成、修改可继续执行；遵守实际工具的沙箱权限，权限拒绝时按工具要求申请授权，不通过换工具规避。除用户明确要求外，不安装软件、不改全局配置、不启动 PowerPoint。
+- 先按 [CODEX.md](CODEX.md) 检查任务所需依赖、创建工作目录和模板指纹；缺少渲染工具时可继续完成不依赖它的工作，但必须报告未完成的视觉检查，不能宣布通过全部交付检查。
+- 预览本地渲染图片使用当前环境提供的图片查看工具；最终回复提供输出文件的绝对路径链接，简述改动、验证结果及未完成项。不要为了检查而自动启动子代理；仅在当前会话明确允许时委派。
 
 ## 配套文档
 
 动手前按任务读对应文档:
 
-- [`PLANNING.md`](PLANNING.md) —— 页数、叙事、逐页内容与布局规划 + 确认关卡
+- [`PLANNING.md`](PLANNING.md) —— 页数、叙事、逐页内容与布局规划及授权处理
 - [`RESEARCH.md`](RESEARCH.md) —— 是否外部检索、来源验证、事实标记与引用
 - [`LAYOUT.md`](LAYOUT.md) —— 按内容密度分配区域、选网格、改造模块、检测无效留白
 - [`COMPANY_STYLE.md`](COMPANY_STYLE.md) —— 画布/配色/字体/Logo/版式一览
@@ -45,7 +48,7 @@ hooks:
 | **把图片(截图、草图、别处的页面)转成一页 PPT** | 在公司模板「正文页」版式(`slideLayout3`)上,用可编辑的形状和文字按图重画,不整张贴图;文字以图上为准。走「默认工作流」第 2-8 步,规划只在回复里简要列出页面结构,不用等确认 |
 | **读取内容** | `markitdown deck.pptx`(每页一个 `<!-- Slide number: N -->` 区块);缩略图:`python3 scripts/thumbnail.py deck.pptx <prefix>` |
 
-用户没有要求公司品牌/模板、且是跟公司汇报无关的私人演示文稿时,改用通用 `pptx` skill。
+用户没有要求公司品牌/模板、且是跟公司汇报无关的私人演示文稿时,不强制套用公司品牌；使用当前可用的通用演示文稿工具，缺少时明确说明，不调用不存在的 `pptx` 技能。
 
 ### 现成的场景模板
 
@@ -104,10 +107,10 @@ hooks:
 
 ## 默认工作流:用公司模板新建
 
-把这份清单复制到回复里,逐项打勾:
+按任务执行以下清单；进度回复只说明关键发现和下一步，不必每次粘贴整份清单:
 
 ```text
-- [ ] 1. 规划:按 PLANNING.md 出整体规划(含 RESEARCH.md 的检索决策、LAYOUT.md 的逐页密度判断),用户确认
+- [ ] 1. 规划:按 PLANNING.md 出整体规划(含 RESEARCH.md 的检索决策、LAYOUT.md 的逐页密度判断),按已有授权执行
 - [ ] 2. 建页:cp 模板 → 解压 → add_slide.py 建出全部目标页
 - [ ] 3. 定稿结构:调整 <p:sldIdLst> 顺序,移除示例页引用,跑 clean.py
 - [ ] 4. 填内容:改 ppt/slides/slideN.xml,或用 pptxgenjs 重搭不匹配的区域(见 PPTXGENJS.md)
@@ -117,29 +120,29 @@ hooks:
 - [ ] 8. 渲染成图片做视觉 QA                   有缺陷 → 回到第 4 步,修完从第 5 步重跑
 ```
 
-第 1 步的规划要求、标记规则和输出格式全在 `PLANNING.md`。三个示例正文页是可选原型:每页由模型按内容语义判断是否复制对应源页,不匹配就用 `COMPANY_STYLE.md` 的其他版式,不让用户逐页挑模块。
+第 1 步的规划要求、标记规则和输出格式全在 `PLANNING.md`。下面代码使用 `CODEX.md` 已建立的 `skill_dir` 与 `work_dir`，每个任务使用不同工作目录。三个示例正文页是可选原型:每页由模型按内容语义判断是否复制对应源页,不匹配就用 `COMPANY_STYLE.md` 的其他版式,不让用户逐页挑模块。
 
 ```bash
 # 2. 解压工作副本
-cp templates/company-template.pptx /tmp/deck.pptx
-python3 -c "import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall('/tmp/unpacked')" /tmp/deck.pptx
+cp "$skill_dir/templates/company-template.pptx" "$work_dir/deck.pptx"
+python3 -c "import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$work_dir/deck.pptx" "$work_dir/unpacked"
 #    匹配三种模块的页 = 复制 slide1/2/3.xml(见 MODULES.md);封面/目录/其他 = 从 slideLayoutN.xml 实例化。
 #    Content_Types / rels / <p:sldIdLst> 自动处理,Logo 随版式/母版自动带出
-python3 scripts/add_slide.py /tmp/unpacked/ slide1.xml --after slide3.xml        # 例:反思模块
-# python3 scripts/add_slide.py /tmp/unpacked/ slideLayout3.xml --after slide3.xml # 例:从"正文页"版式新开
+python3 "$skill_dir/scripts/add_slide.py" "$work_dir/unpacked/" slide1.xml --after slide3.xml        # 例:反思模块
+# python3 "$skill_dir/scripts/add_slide.py" "$work_dir/unpacked/" slideLayout3.xml --after slide3.xml # 例:从"正文页"版式新开
 
 # 3. 全部页面建好后:改 ppt/presentation.xml 的 <p:sldIdLst> 定顺序,删掉 slide1/2/3 示例页引用
 #    (用户明确要保留的除外)。不要直接删 slide 文件,交给 clean.py
-python3 scripts/clean.py /tmp/unpacked/
+python3 "$skill_dir/scripts/clean.py" "$work_dir/unpacked/"
 
 # 4. 编辑最终保留页:结构跟源页接近 = 安全文字替换(见「填充模板时」);
 #    栏数/条目数/层级对不上 = 保留 COMPANY_STYLE.md 的图形语言,增删形状子组或用 pptxgenjs 重搭该区域
 
 # 5-7. 打包与检查
-(cd /tmp/unpacked && rm -f ../out.pptx && zip -Xr ../out.pptx .)
-python3 scripts/office/validate.py /tmp/out.pptx --original templates/company-template.pptx
-python3 scripts/check_delivery.py /tmp/out.pptx --template templates/company-template.pptx
-python3 scripts/check_layout.py /tmp/out.pptx --original templates/company-template.pptx
+(cd "$work_dir/unpacked" && zip -Xr "$work_dir/out.pptx" .) # 首次打包；重打包前只删除本任务旧 out.pptx
+python3 "$skill_dir/scripts/office/validate.py" "$work_dir/out.pptx" --original "$skill_dir/templates/company-template.pptx"
+python3 "$skill_dir/scripts/check_delivery.py" "$work_dir/out.pptx" --template "$skill_dir/templates/company-template.pptx"
+python3 "$skill_dir/scripts/check_layout.py" "$work_dir/out.pptx" --original "$skill_dir/templates/company-template.pptx"
 ```
 
 ## 脚本
@@ -154,7 +157,7 @@ python3 scripts/check_layout.py /tmp/out.pptx --original templates/company-templ
 | `scripts/check_delivery.py deck.pptx [--template ...] [--scaffold ...] [--fix]` | 交付前检查:XML 声明 `standalone="yes"`、docProps 作者与旧页标题、模板示例文案残留、场景模板占位、通用占位符与规划标签。`--fix` 自动修 docProps |
 | `scripts/check_layout.py deck.pptx [--original src.pptx] [--slides 5,6]` | 版面几何检查:形状超出画布、图片或方块压到边框、箭头短到只剩箭头头部,以及按字宽估算的文字溢出、文字贴着或跨过边框、连线穿过文字。结果要对照渲染图判断,见「版面几何检查」 |
 | `scripts/office/soffice.py --headless --convert-to pdf deck.pptx` | LibreOffice 封装,自动配置运行环境,避免裸调 `soffice` 卡住 |
-| `scripts/guard_templates.py` | hook 脚本,由 frontmatter 自动挂载,拦截写入原始模板的操作,不需要手动调用 |
+| `scripts/guard_templates.py --snapshot <manifest.json>` / `--verify <manifest.json>` | 显式记录／复核模板 SHA-256，不依赖自动 hook；详见 CODEX.md |
 
 ## 编辑现有演示文稿和模板
 
@@ -253,7 +256,7 @@ python3 scripts/check_layout.py output.pptx --original src.pptx --slides 5   # �
 
 ### 视觉检查
 
-按「转换成图片」渲染后逐页看。盯着生成代码久了容易看到预期而非实际,所以用新鲜的眼光看图(有子 agent 时交给它效果更好)。要找的缺陷:
+按「转换成图片」渲染后逐页看。盯着生成代码久了容易看到预期而非实际,所以重新对照实际图像检查，不依赖对生成代码的预期。要找的缺陷:
 
 - **文字溢出或被容器/页面边界截断——先查这个**
 - 元素重叠(文字穿过形状、线条穿过文字)、与 Logo 冲突
@@ -279,13 +282,12 @@ fc-list :lang=zh family | grep -iE "Microsoft YaHei|DengXian"                   
 缺字体时,LibreOffice 每次渲染挑的替代字体都可能不一样,有时是手写体,同一份文件前后两次渲染的字宽也不同,所以改前改后的对比图不能拿来比换行。在回复里说明渲染图的换行可能和 PowerPoint 不一致,并告诉用户怎么安装,不要自行安装。装了 Office for Mac 的,字体在 `/Applications/Microsoft PowerPoint.app/Contents/Resources/DFonts/`,把 `msyh*.ttc`、`Deng*.ttf` 复制到 `~/Library/Fonts/` 就行。
 
 ```bash
-python3 scripts/office/soffice.py --headless --convert-to pdf output.pptx
-rm -f slide-*.jpg
-pdftoppm -jpeg -r 150 output.pdf slide
-ls -1 "$PWD"/slide-*.jpg
+python3 "$skill_dir/scripts/office/soffice.py" --headless --convert-to pdf --outdir "$work_dir" "$work_dir/output.pptx"
+# 只在本任务目录清理旧预览；不要在项目或用户目录运行通配删除
+pdftoppm -jpeg -r 150 "$work_dir/output.pdf" "$work_dir/slide"
 ```
 
-把打印出的绝对路径直接交给看图工具。`rm` 清掉上一轮的旧图;`pdftoppm` 按总页数补零(10 页内 `slide-1.jpg`,10-99 页 `slide-01.jpg`)。每次修改后四条命令全部重跑,PDF 必须从改过的 `.pptx` 重新生成。
+把打印出的绝对路径直接交给看图工具。重渲染前仅清理本任务目录的旧图;`pdftoppm` 按总页数补零(10 页内 `slide-1.jpg`,10-99 页 `slide-01.jpg`)。每次修改后重新导出 PDF 并渲染,PDF 必须从改过的 `.pptx` 重新生成。
 
 ## 依赖
 
@@ -300,4 +302,4 @@ brew install poppler                                    # pdftoppm,转图片(Lin
 
 ## 测试
 
-`evals/evals.json` 有 6 个测试任务。改动本 skill 后,在新会话里分别开启和关闭本 skill 各跑一遍,对比结果,不变差才保留改动。
+`evals/evals.json` 提供行为回归场景。修改脚本时运行相关功能验证；完整行为评估按任务范围在隔离工作目录执行，报告实际覆盖范围，不把静态校验或脚本冒烟测试称为整份 PPT 的视觉验收。

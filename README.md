@@ -1,6 +1,6 @@
 # ENN-pptx 2.0
 
-给 Claude Code 用的**新奥集团 PPT 模板生成 skill** —— 通用 [pptx skill](https://github.com/anthropics/skills/tree/main/skills/pptx) 的定制分支。底层机制（pptxgenjs 踩坑清单、XML 直接编辑、校验器）继承自官方版本，新增的是**默认套用新奥的 PPT 模板**，以及一套"先规划叙事、再自适应布局"的生成流程。
+给 Codex 用的**新奥集团 PPT 模板生成 skill** —— 通用 [pptx skill](https://github.com/anthropics/skills/tree/main/skills/pptx) 的定制分支。底层机制（pptxgenjs 踩坑清单、XML 直接编辑、校验器）继承自官方版本，新增的是**默认套用新奥的 PPT 模板**，以及一套"先规划叙事、再自适应布局"的生成流程。
 
 生成时不逐页套模块，而是先对用户素材做整体叙事规划，显式判断是否需要外部知识检索，再按每页的内容量和信息层级自适应选择版式。核心主张是**内容决定结构，模板决定风格**：栏数、条目数、图分几层跟着实际内容走，配色/字体/Logo/图形语言严格跟模板一致。
 
@@ -33,13 +33,15 @@
 
 ### 1. 安装 skill
 
-克隆 enn-pptx-new-2 分支到 Claude Code 的 skills 目录：
+本分支 `enn-pptx-new-2-codex` 为 Codex 适配版；原 Claude Code 版本保留在 `enn-pptx-new-2` 分支。技能名称与安装目录均为 `enn-pptx-new-2`。
+
+将技能放入 Codex 的本地 skills 目录（当前安装目录为 `~/.codex/skills/enn-pptx-new-2`）：
 
 ```bash
-git clone -b enn-pptx-new-2 https://github.com/Robin1022/ENN-pptx.git ~/.claude/skills/enn-pptx-new-2
+git clone -b enn-pptx-new-2-codex https://github.com/Robin1022/ENN-pptx.git ~/.codex/skills/enn-pptx-new-2
 ```
 
-目录名保持 `enn-pptx-new-2`：`SKILL.md` frontmatter 里的模板保护 hook 在拿不到 `CLAUDE_SKILL_DIR` 时会退回这个默认路径。
+当前保留技能名 `enn-pptx-new-2`，可显式使用 `$enn-pptx-new-2`。资源按实际技能目录定位，不依赖 Claude 环境变量。运行前阅读 [CODEX.md](CODEX.md)，使用独立工作目录并记录模板指纹。
 
 ### 2. 安装依赖
 
@@ -62,7 +64,7 @@ Linux 下把最后两行换成对应的包管理器命令（`libreoffice`、`pop
 仓库已带新奥新智模板 `templates/company-template.pptx`。用其他模板时覆盖这个文件：
 
 ```bash
-cp /path/to/模板.pptx ~/.claude/skills/enn-pptx-new-2/templates/company-template.pptx
+cp /path/to/模板.pptx ~/.codex/skills/enn-pptx-new-2/templates/company-template.pptx
 ```
 
 文件名必须是 `company-template.pptx`，否则 `SKILL.md` 里所有"从模板实例化"的流程都找不到它。
@@ -81,7 +83,7 @@ cp /path/to/模板.pptx ~/.claude/skills/enn-pptx-new-2/templates/company-templa
 ### 第 1 步：盘点模板结构
 
 ```bash
-cd ~/.claude/skills/enn-pptx-new-2
+cd ~/.codex/skills/enn-pptx-new-2
 python3 scripts/thumbnail.py templates/company-template.pptx template-thumbs
 ```
 
@@ -155,7 +157,7 @@ cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
 | 文件 | 作用 | 换模板时是否要改 |
 |---|---|---|
 | [`SKILL.md`](SKILL.md) | 入口。任务分流、脚本清单、生成流程、QA 关卡 | 否 |
-| [`PLANNING.md`](PLANNING.md) | 整份 PPT 的页数、叙事、逐页内容规划 + 生成前的确认关卡 | 否 |
+| [`PLANNING.md`](PLANNING.md) | 整份 PPT 的页数、叙事、逐页内容规划与授权处理 | 否 |
 | [`RESEARCH.md`](RESEARCH.md) | 外部检索决策、来源验证、事实标记与引用要求 | 否 |
 | [`LAYOUT.md`](LAYOUT.md) | 按内容密度分配区域、选择网格、改造模块、检测无效留白 | 否 |
 | [`COMPANY_STYLE.md`](COMPANY_STYLE.md) | 视觉规范（画布/配色/字体/Logo/版式一览） | **是，整篇重测** |
@@ -178,7 +180,7 @@ cp templates/campus-hire-defence.pptx ~/Desktop/我的转正答辩.pptx
 | `scripts/office/soffice.py` | LibreOffice 封装（自动配置运行环境，避免裸调 `soffice` 卡住） |
 | `scripts/check_layout.py` | 版面几何检查：越界、压边框、文字贴边、箭头过短、文字溢出（结果需对照渲染图判断） |
 | `scripts/check_delivery.py` | 交付前检查：XML 声明、docProps 作者与旧页标题、模板示例文案残留、场景模板占位；`--fix` 自动修 docProps |
-| `scripts/guard_templates.py` | 模板保护 hook，由 `SKILL.md` frontmatter 自动挂载，拦截写入 `templates/` 原始模板的操作 |
+| `scripts/guard_templates.py` | 显式记录／复核原始模板 SHA-256；发现修改、丢失或新增模板时报错，不是自动拦截 hook |
 
 ## 依赖
 
