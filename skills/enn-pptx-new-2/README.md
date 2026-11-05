@@ -33,7 +33,7 @@
 
 ### 1. 安装 skill
 
-插件安装、独立 Skill 安装及版本更新见[仓库安装说明](https://github.com/Robin1022/ENN-pptx/tree/enn-pptx-new-2-codex#安装插件推荐给同事)。本目录是两种安装方式共用的唯一 Skill 内容，不在这里复制另一份。
+插件安装、独立 Skill 安装及版本更新见[仓库安装说明](https://github.com/Robin1022/ENN-pptx/tree/enn-pptx-new-2-codex#安装插件)。本目录是两种安装方式共用的唯一 Skill 内容，不在这里复制另一份。
 
 ### 2. 安装依赖
 

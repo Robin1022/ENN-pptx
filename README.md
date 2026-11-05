@@ -4,7 +4,7 @@
 
 本分支 `enn-pptx-new-2-codex` 提供 Codex 版。原 Claude Code 版本保留在 `enn-pptx-new-2` 分支。插件和独立 Skill 共用 `skills/enn-pptx-new-2/`，只维护一份模板、脚本和制作规则。
 
-## 安装插件（推荐给同事）
+## 安装插件
 
 需要支持 `codex plugin` 的 Codex CLI，以及 Git。添加此仓库的 Codex 分支为插件市场，再安装：
 
